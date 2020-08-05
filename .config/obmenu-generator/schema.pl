@@ -33,7 +33,7 @@ our $SCHEMA = [
     
     #         COMMAND                                             LABEL                     ICON
     {item => ["bash -c '~/.config/rofi/scripts/appsmenu.sh'",     "Launch Apps",            "preferences-system-login"]},    
-    {item => ["urxvt",                                            "Open Terminal",          "utilities-terminal"]},
+    {item => ["termite",                                            "Open Terminal",          "utilities-terminal"]},
     
     {sep  => undef},
     
@@ -52,7 +52,7 @@ our $SCHEMA = [
     
     {sep => "SESSIONS"},
     
-    {item => ["urxvt -e ~/.config/openbox/visual-mode/wally"    , "Change Wallpaper" ,      "wallpapoz"]},
+    {item => ["termite -e ~/.config/openbox/visual-mode/wally"    , "Change Wallpaper" ,      "wallpapoz"]},
     
     {sep  => undef},
     

@@ -29,3 +29,7 @@ xss-lock -- /usr/bin/slimlock &
 
 # Apps & Others (ex:mpd)
 mpd
+
+# Language EN-AR
+setxkbmap -layout us,ar -variant ,qwerty -option 'grp:alt_shift_toggle'
+

@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
-urxvt -g 87x14 -e ncmpcpp -c ~/.ncmpcpp/albumart
+termite -e ncmpcpp -c ~/.ncmpcpp/albumart
 exit 0
