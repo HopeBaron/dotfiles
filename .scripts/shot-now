@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
 # Screenshot now
-sleep .5s
 flameshot full -p ~/Screenshots/
+
+notify-send -i deepin-screenshot -u low "Screenshot" "Saved in <u>/home/`whoami`/Pictures/</u>"

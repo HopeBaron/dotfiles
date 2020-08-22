@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
 
 # Screenshot select window or draw
-sleep .5s
 flameshot gui -p ~/Screenshots/ && notify-send -i deepin-screenshot -u low "Screenshot" "Saved in\n<u>`pwd`/Screenshots/</u>"

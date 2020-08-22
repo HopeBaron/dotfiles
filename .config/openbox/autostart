@@ -6,30 +6,30 @@
 # ---
 
 # Load Xresources
-[[ -f ~/.Xresources ]] && xrdb ~/.Xresources
+xrdb ~/.Xresources
 
 # UI Appearance - Open Last Theme (wallpaper, panel, notify-daemon)
 current="$(cat ~/.config/openbox/visual-mode/current)"
-bash ~/.config/openbox/visual-mode/$current/ui
+bash ~/.config/openbox/visual-mode/$current/ui &> /dev/null
 
-# Tray
-bash ~/.config/openbox/tray
+# Start Tray
+bash ~/.config/openbox/tray &> /dev/null
 
 # Compositor
 picom -C -b
 
-# PolicyKit
-/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+# Authentication Agent - PolicyKit
+lxpolkit &
 
 # Power Manager
-xfce4-power-manager &
+#xfce4-power-manager &
 
-# Lock Screen Handler
-xss-lock -- /usr/bin/slimlock &
+# Sessions Lock (time: minute)
+xautolock -time 3 -locker "slimlock" -detectsleep &
 
-# Apps & Others (ex:mpd)
-mpd
 
 # Language EN-AR
 setxkbmap -layout us,ar -variant ,qwerty -option 'grp:alt_shift_toggle'
 
+# Others (e.g: mpd)
+mpd &> /dev/null

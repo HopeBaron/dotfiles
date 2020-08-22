@@ -1,5 +1,5 @@
 [options]
-font = mplus Nerd Font Mono 10
+font = JetBrainsMono Nerd Font 16
 [colors]
 foreground =                     #EDFEFE
 foreground_bold =                #EDFEFE

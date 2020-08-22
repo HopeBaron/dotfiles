@@ -10,7 +10,7 @@
 ##  
 ### :octocat: Hi there! Thanks for visiting!
 
-<img src="https://i.ibb.co/d7nx57K/X.png" alt="stuck-in-stack" align="right" width="400px">
+<img src="https://i.ibb.co/ZBMj9GP/thumbnail-quad.jpg" alt="stuck-in-stack.thumbnail" align="right" width="400px">
 
 This is my personal configuration for my favorite openbox window manager and some applications too.
 
@@ -26,32 +26,58 @@ Here are some details about my setup:
 - **Compositor**                   : [Picom](https://github.com/yshui/picom)
 - **Notify Daemon**                : [dunst](https://wiki.archlinux.org/index.php/Dunst) :bookmark: minimalist!
 - **Application Launcher**         : [rofi](https://github.com/davatorium/rofi) :rocket: apps & sidebar menu!
-- **File Manager**                 : [Thunar](https://wiki.archlinux.org/index.php/Thunar) :milky_way: sidebar & icon customized!
+- **File Manager**                 : [Thunar](https://wiki.archlinux.org/index.php/Thunar) :milky_way: customized sidebar & icon!
 - **Text Editor**                  : [Geany](https://www.geany.org/), nano, vim
+
+## Changelogs
+- **New scripts**:
+<img src="https://i.ibb.co/yhgkmtH/notify.gif" alt="notify" align="right" width="200px">
+
+1. [Notify-send](https://github.com/vlevit/notify-send.sh) with more features \
+*E.g replacing previous notification.*
+2. Volume and brightness changer with the script above
+3. OB button location switcher
+4. Wallpaper changer
+5. Add border background with shadow in scrot selection mode
+               
+- **New wallpapers** (can be [added](./.wallpaper/) by yourself)
+
+- **Reconfigure**:
+<img src="https://user-images.githubusercontent.com/53987136/90441592-6ee6ea80-e103-11ea-96b5-e604efa9d3f2.gif" alt="better-promptmenu" align="right" width="200px">
+
+1. Rofi Promptmenu \
+*Better promptmenu from [ekaunt](https://github.com/owl4ce/dotfiles/pull/2).*
+2. Cava default color (red) \
+*Not using gradients anymore so you can change color with the <kbd>F</kbd> key.*
+3. Color Toys (bloks) \
+*Like addy-dclxvi style!*
+4. All Papirus Custom Icons \
+*Customize notification icons for volume and brightness.*
+5. Nanorc \
+*Change the color scheme and use [scopatz/nanorc](https://github.com/scopatz/nanorc) as syntax highlighting.*
+                   
+- **Make less output by redirecting to /dev/null**
+
+Look in the gallery and [workflow](https://www.youtube.com/watch?v=5zLJO6UyZFw&t=3s) for more details.
 
 ## Setup
 ## <p align="center">:construction_worker: README UNDER MAINTENANCE :construction_worker:</p>
-<p align="center"><a name="top" href="https://rykmyid.github.io/build-openbox-wm">How to setup in Indonesian here</a></p>
-
-## <p align="center">:tada:<a name="top" href="https://www.youtube.com/watch?v=wpy-ccF4gfw">Video Preview</a>:tada:</p>
 
 ## Notes
 ### <p align="center">Detailed Environment</p>
 | Items                  | Values                                                                                               |
 |------------------------|------------------------------------------------------------------------------------------------------|
-| Audio Volume Control   | [pamixer](https://github.com/cdemoulins/pamixer)                                                     |
-| Sound Mixer            | pulseaudio                                                                                           |
-| Volume Control         | pavucontrol                                                                                          |
+| Audio Volume Control   | amixer, pavucontrol                                                                                  |
 | Brightness Handler     | [brightnessctl](https://github.com/Hummer12007/brightnessctl)                                        |
 | Wallpaper Setter       | nitrogen                                                                                             |
 | Power Manager          | xfce4-power-manager                                                                                  |
 | Lockscreen             | slimlock (from slim display manager)                                                                 |
-| Sessions Locker        | [xss-lock](https://wiki.archlinux.org/index.php/Session_lock#xss-lock)                               |
-| Clipboard Manager      | clipit, xclip                                                                                        |
+| Sessions Locker        | [xautolock](https://wiki.archlinux.org/index.php/Session_lock#xautolock)                             |
+| Clipboard Manager      | parcellite, xclip                                                                                    |
 | Calendar Pop-up        | gsimplecal (for pop-up from tint2)                                                                   |
-| Authentication Agent   | polkit-gnome-authentication-agent-1                                                                  |
+| Authentication Agent   | [lxpolkit](https://wiki.archlinux.org/index.php/Polkit)                                              |
 | Network Manager        | NetworkManager + [networkmanager_dmenu](https://github.com/firecat53/networkmanager-dmenu)           |
-| QT Themer              | qt5ct (adapted to the GTK Theme)                                                                     |
+| QT Themer              | qt5ct, qt5-styleplugins (adapted to the GTK Theme)                                                   |
 | GTK Themer             | lxappearance                                                                                         |
 | Audio Visualizer       | [cava](https://github.com/karlstav/cava)                                                             |
 | Screenshot App         | scrot                                                                                                |
@@ -66,7 +92,10 @@ Here are some details about my setup:
 | CLI System Information | neofetch                                                                                             |
 ##  
 ### <p align="center">Color Scheme</p>
-<p align="center"><a name="top" href="#notes"><img height="60%" width="100%" src="https://i.ibb.co/kHRHZfX/color-scheme.png"></a></p>
+<p align="center"><a name="top" href="#color-scheme"><img src="https://i.ibb.co/kHRHZfX/color-scheme.png" alt="owl4ce.color-scheme" height="60%" width="100%"></a></p>
+
+### <p align="center">:love_letter:</p>
+<p align="center">Please don't underestimate, I've configured them all since April 2020 and have been studying them since October 2019. Awesome open-source. If you support it, star it or make a pull request. Or if there is a problem you can make an issue here. Thank you!</p>
 
 ## Credits / Thanks
 - [Elenapan](https://github.com/elenapan)
