@@ -297,6 +297,11 @@ for i = 1, 10 do
     hl.bind(mainMod .. " + SHIFT + " .. key,     hl.dsp.window.move({ workspace = i }))
 end
 
+-- Next empty workspace, when the number does not matter.
+-- Both follow the window, and the workspace disappears again once it empties.
+hl.bind(mainMod .. " + Return",         hl.dsp.focus({ workspace = "empty" }))
+hl.bind(mainMod .. " + SHIFT + Return", hl.dsp.window.move({ workspace = "empty" }))
+
 -- Example special workspace (scratchpad)
 hl.bind(mainMod .. " + S",         hl.dsp.workspace.toggle_special("magic"))
 hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }))
