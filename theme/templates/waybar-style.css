@@ -43,11 +43,6 @@ window#waybar {
   background-color: #${RED};
 }
 
-#window {
-  color: #${GREY2};
-  padding: 0 10px;
-}
-window#waybar.empty #window { background-color: transparent; }
 
 /* ---------- centre: clock ---------- */
 

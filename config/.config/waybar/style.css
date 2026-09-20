@@ -43,11 +43,6 @@ window#waybar {
   background-color: #ea6962;
 }
 
-#window {
-  color: #a89984;
-  padding: 0 10px;
-}
-window#waybar.empty #window { background-color: transparent; }
 
 /* ---------- centre: clock ---------- */
 

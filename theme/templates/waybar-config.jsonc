@@ -6,7 +6,7 @@
   "height": 34,
   "spacing": 0,
 
-  "modules-left":   ["hyprland/workspaces", "hyprland/window"],
+  "modules-left":   ["hyprland/workspaces"],
   "modules-center": ["clock"],
   "modules-right":  ["cpu", "memory", "pulseaudio", "network", "bluetooth",
                      "custom/notification", "tray", "custom/power"],
@@ -17,11 +17,6 @@
     "sort-by-number": true
   },
 
-  "hyprland/window": {
-    "format": "{title}",
-    "max-length": 60,
-    "separate-outputs": true
-  },
 
   // Seconds, as asked. Tooltip shows the month calendar.
   "clock": {
