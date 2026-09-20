@@ -48,12 +48,19 @@ while :; do
     "
   )
 
-  [ "${#rows[@]}" -eq 0 ] && exit 0
+  # Show the menu even with nothing to list -- an empty workspace should
+  # still open, with an inert placeholder row, so Alt+a stays reachable
+  # instead of the whole thing silently doing nothing.
+  if [ "${#rows[@]}" -eq 0 ]; then
+    list="(no windows)"
+  else
+    list=$(printf '%s\n' "${rows[@]}" | cut -f2-)
+  fi
 
   # rofi exits non-zero for Escape (1) and for -kb-custom-5 (14 = 10+5-1), so
   # the call must not trip `set -e`.
   set +e
-  choice=$(printf '%s\n' "${rows[@]}" | cut -f2- \
+  choice=$(printf '%s\n' "$list" \
     | rofi -dmenu -i -p "$prompt" -mesg "<b>Enter</b> focus   <b>Alt+a</b> $hint")
   rc=$?
   set -e
@@ -64,6 +71,7 @@ while :; do
   fi
 
   [ -z "${choice:-}" ] && exit 0
+  [ "${#rows[@]}" -eq 0 ] && exit 0   # only the placeholder row existed
   addr=$(printf '%s\n' "${rows[@]}" | awk -F'\t' -v c="$choice" '$2 == c { print $1; exit }')
   [ -n "$addr" ] && hyprctl dispatch "hl.dsp.focus({ window = \"address:$addr\" })"
   exit 0
