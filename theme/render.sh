@@ -13,4 +13,7 @@ echo "Rendering Gruvbox Material (dark/medium/material):"
 render hypr-colors.lua   hypr/colors.lua
 render kitty-colors.conf kitty/colors.conf
 render wofi-style.css    wofi/style.css
+render waybar-config.jsonc waybar/config.jsonc
+render waybar-style.css  waybar/style.css
+render swaync-style.css  swaync/style.css
 echo "Done. Reload: hyprctl reload  /  kitty @ load-config"

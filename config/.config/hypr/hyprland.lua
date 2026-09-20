@@ -51,13 +51,10 @@ local menu        = scripts .. "/wofi-launch.sh"
 -- See https://wiki.hypr.land/Configuring/Basics/Autostart/
 
 -- Autostart necessary processes (like notifications daemons, status bars, etc.)
--- Or execute your favorite apps at launch like this:
---
--- hl.on("hyprland.start", function () 
---   hl.exec_cmd(terminal)
---   hl.exec_cmd("nm-applet")
---   hl.exec_cmd("waybar & hyprpaper & firefox")
--- end)
+hl.on("hyprland.start", function ()
+    hl.exec_cmd("waybar")
+    hl.exec_cmd("swaync")   -- notification daemon + control centre
+end)
 
 
 -------------------------------
@@ -276,6 +273,10 @@ hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 -- Window switcher: Tab for the active workspace, SHIFT+Tab for every workspace.
 hl.bind(mainMod .. " + Tab",           hl.dsp.exec_cmd(scripts .. "/wofi-windows.sh --workspace"))
 hl.bind(mainMod .. " + SHIFT + Tab",   hl.dsp.exec_cmd(scripts .. "/wofi-windows.sh --global"))
+
+-- Power menu and notification centre.
+hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd(scripts .. "/wofi-power.sh"))
+hl.bind(mainMod .. " + N",      hl.dsp.exec_cmd("swaync-client -t -sw"))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
 
@@ -368,4 +369,13 @@ hl.window_rule({
 
     move  = "20 monitor_h-120",
     float = true,
+})
+
+-- Windows launched from the waybar status modules: float them, centred.
+hl.window_rule({
+    name  = "float-settings",
+    match = { class = "^(net-tui|pavucontrol|\\.blueman-manager-wrapped|blueman-manager)$" },
+    float = true,
+    size  = "900 600",
+    move  = "cursor -450 -300",
 })
