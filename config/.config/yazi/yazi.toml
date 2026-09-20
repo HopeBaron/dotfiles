@@ -1,0 +1,17 @@
+# yazi -- hand-written. Colours live in theme.toml (generated; see theme/render.sh).
+
+[mgr]
+ratio          = [1, 3, 4]
+sort_by        = "natural"
+sort_sensitive = false
+sort_dir_first = true
+linemode       = "size"
+show_hidden    = false
+show_symlink   = true
+scrolloff      = 5
+
+[preview]
+wrap        = "no"
+tab_size    = 4
+max_width   = 1200
+max_height  = 1800

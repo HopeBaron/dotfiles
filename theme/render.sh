@@ -20,4 +20,5 @@ render rofi-theme.rasi   rofi/gruvbox-material.rasi
 render waybar-config.jsonc waybar/config.jsonc
 render waybar-style.css  waybar/style.css
 render swaync-style.css  swaync/style.css
+render yazi-theme.toml   yazi/theme.toml
 echo "Done. Reload: hyprctl reload  /  kitty @ load-config"
