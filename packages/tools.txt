@@ -1,0 +1,20 @@
+# Always installed, on every path -- EndeavourOS does NOT provide these, and
+# either install.sh itself or a committed config calls them by name.
+# (base.txt is skipped unless --bare-arch, so nothing here may live there.)
+
+# install.sh's own toolchain
+stow                        # deploys config/ into ~ as symlinks
+gettext                     # envsubst, used by theme/render.sh
+
+# called by hyprland.lua binds
+brightnessctl               # XF86MonBrightness binds
+playerctl                   # XF86Audio media binds
+
+# called by the scripts
+libnotify                   # notify-send, used by rofi-clipboard.sh
+
+# fonts -- kitty.conf asks for JetBrainsMono Nerd Font by name, and the
+# waybar/rofi menus are full of Nerd Font glyphs that render as tofu without it.
+ttf-jetbrains-mono-nerd
+noto-fonts
+noto-fonts-emoji

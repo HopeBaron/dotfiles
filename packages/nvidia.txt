@@ -1,7 +1,0 @@
-# Installed only with `./install.sh --nvidia`.
-# nvidia-open covers Turing (GTX 16xx / RTX 20xx) and newer.
-# On Maxwell/Pascal or older, swap nvidia-open for nvidia-dkms.
-nvidia-open
-nvidia-utils
-lib32-nvidia-utils
-egl-wayland

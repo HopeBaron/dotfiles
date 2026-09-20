@@ -2,11 +2,10 @@
 # Deploy this Hyprland setup.
 #
 # Baseline is an EndeavourOS install: its installer already provides the base
-# packages, the NVIDIA driver, the display manager and the audio/network
+# system, the NVIDIA driver, the display manager and the audio/network
 # services, so none of that is repeated here.
 #
-#   ./install.sh              desktop packages, render colours, stow configs
-#   ./install.sh --bare-arch  also install base packages + enable services
+#   ./install.sh              install packages, render colours, stow configs
 #   ./install.sh --nvidia     also install the NVIDIA stack and set DRM modeset
 #   ./install.sh --no-deploy  skip stow (packages only)
 #
@@ -14,16 +13,14 @@
 set -euo pipefail
 
 repo=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-bare_arch=0
 with_nvidia=0
 deploy=1
 
 for arg in "$@"; do
   case "$arg" in
-    --bare-arch) bare_arch=1 ;;
     --nvidia)    with_nvidia=1 ;;
     --no-deploy) deploy=0 ;;
-    -h|--help)   sed -n '2,13p' "$0"; exit 0 ;;
+    -h|--help)   sed -n '2,12p' "$0"; exit 0 ;;
     *) echo "unknown option: $arg" >&2; exit 2 ;;
   esac
 done
@@ -48,15 +45,6 @@ install_pkgs() {
 say "Updating the system"
 sudo pacman -Syu --noconfirm
 
-if [ "$bare_arch" -eq 1 ]; then
-  install_pkgs base.txt
-  say "Enabling base services"
-  sudo systemctl enable --now NetworkManager.service
-  systemctl --user enable --now wireplumber.service
-  echo "  note: pipewire is socket-activated and needs no enabling."
-  echo "  note: install a display manager yourself, or start Hyprland from a TTY."
-fi
-
 if [ "$with_nvidia" -eq 1 ]; then
   install_pkgs nvidia.txt
   # Bootloader-agnostic: set the DRM modeset flag via modprobe rather than
@@ -71,6 +59,9 @@ if [ "$with_nvidia" -eq 1 ]; then
   fi
 fi
 
+# tools.txt first: it carries stow and gettext, which the deploy steps below
+# call. EndeavourOS ships neither.
+install_pkgs tools.txt
 install_pkgs desktop.txt
 
 # bluez ships disabled; the waybar bluetooth module stays empty without this.
