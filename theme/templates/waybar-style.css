@@ -54,6 +54,7 @@ window#waybar {
 
 /* ---------- right: status ---------- */
 
+#language,
 #cpu, #memory, #pulseaudio, #network, #bluetooth,
 #custom-notification, #tray, #custom-power {
   padding: 0 10px;
@@ -61,6 +62,7 @@ window#waybar {
 }
 
 /* One accent per module -- reads as a set without turning into a rainbow. */
+#language            { color: #${ORANGE}; }
 #cpu                 { color: #${AQUA}; }
 #memory              { color: #${GREEN}; }
 #pulseaudio          { color: #${BLUE}; }

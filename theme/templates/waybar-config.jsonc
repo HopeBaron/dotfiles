@@ -8,8 +8,18 @@
 
   "modules-left":   ["hyprland/workspaces"],
   "modules-center": ["clock"],
-  "modules-right":  ["cpu", "memory", "pulseaudio", "network", "bluetooth",
-                     "custom/notification", "tray", "custom/power"],
+  "modules-right":  ["hyprland/language", "cpu", "memory", "pulseaudio", "network",
+                     "bluetooth", "custom/notification", "tray", "custom/power"],
+
+  // Keyboard layout. Switched with SUPER+space (grp:win_space_toggle).
+  "hyprland/language": {
+    // {shortDescription} is xkb's short name: us -> "en", ara -> "ar". It is
+    // used instead of per-layout "format-<lang>" keys on purpose --
+    // on waybar 0.15.0 those keys are never applied, and "format-ar"
+    // specifically kills the module outright ("argument not found"), which
+    // also makes this work for any layout added later without new keys.
+    "format": "\uf11c  {shortDescription}"
+  },
 
   "hyprland/workspaces": {
     "format": "{name}",

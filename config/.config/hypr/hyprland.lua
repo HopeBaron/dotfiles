@@ -233,10 +233,14 @@ hl.config({
 
 hl.config({
     input = {
-        kb_layout  = "us",
-        kb_variant = "",
+        -- us,ara matches what localectl already reports for X11.
+        kb_layout  = "us,ara",
+        kb_variant = ",",
         kb_model   = "",
-        kb_options = "",
+        -- SUPER+space cycles the layouts. Done as an xkb option rather than a
+        -- hl.bind so the switch happens inside xkb itself: Hyprland then emits
+        -- the activelayout event that waybar's language module listens for.
+        kb_options = "grp:win_space_toggle",
         kb_rules   = "",
 
         follow_mouse = 1,
