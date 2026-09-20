@@ -1,0 +1,4 @@
+# The Hyprland desktop itself. Grows as components are added.
+hyprland
+xdg-desktop-portal-hyprland
+kitty
