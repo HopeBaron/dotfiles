@@ -21,17 +21,25 @@ FOOTER='<b>Enter</b> copy   <b>Alt+p</b> pin/unpin   <b>Alt+d</b> delete   <b>Al
 note() { command -v notify-send >/dev/null && notify-send -a clipboard "$1" "${2:-}" || true; }
 
 # Emit rows as: KIND US KEY US LABEL
+#
+# A pinned clip is still in cliphist's history, so listing both sources
+# verbatim shows it twice. Pinned previews are collected first and the
+# matching history row is skipped, leaving one row per clip.
 collect_rows() {
   local n=0 f id preview line
+  declare -A pinned=()
   while IFS= read -r f; do
     [ -n "$f" ] || continue
     id=$(basename "$f" .txt); preview=$(head -c 200 "$f")
+    pinned["$preview"]=1
     n=$((n + 1)); printf 'pin%s%s%s%d  󰐃 %s\n' "$US" "$id" "$US" "$n" "$preview"
   done < <(ls -t "$PIN_DIR"/*.txt 2>/dev/null || true)
 
   while IFS= read -r line; do
     [ -n "$line" ] || continue
-    n=$((n + 1)); printf 'hist%s%s%s%d  %s\n' "$US" "$line" "$US" "$n" "${line#*	}"
+    preview=${line#*	}
+    [ -n "${pinned["$preview"]:-}" ] && continue   # already shown as a pin
+    n=$((n + 1)); printf 'hist%s%s%s%d  %s\n' "$US" "$line" "$US" "$n" "$preview"
   done < <(cliphist list 2>/dev/null || true)
 }
 
@@ -47,11 +55,22 @@ copy_entry() {
   payload_of "$kind" "$key" | wl-copy --type "$mime"
 }
 
+# Unpinning must not destroy the clip. Its history row was only hidden while
+# the pin existed, but it may have rolled out of the history window since, so
+# push it back when it is no longer there.
+unpin() {
+  local key=$1 preview
+  preview=$(cat "$PIN_DIR/$key.txt" 2>/dev/null || true)
+  if [ -n "$preview" ] && ! cliphist list | grep -qF -- "$preview"; then
+    cliphist store < "$PIN_DIR/$key.bin"
+  fi
+  rm -f "$PIN_DIR/$key.bin" "$PIN_DIR/$key.mime" "$PIN_DIR/$key.txt"
+  note "Unpinned" "Kept in history"
+}
+
 toggle_pin() {
   local kind=$1 key=$2 tmp id
-  if [ "$kind" = pin ]; then
-    rm -f "$PIN_DIR/$key.bin" "$PIN_DIR/$key.mime" "$PIN_DIR/$key.txt"; note "Unpinned"; return
-  fi
+  if [ "$kind" = pin ]; then unpin "$key"; return; fi
   tmp=$(mktemp); trap 'rm -f "$tmp"' RETURN
   payload_of "$kind" "$key" > "$tmp"
   id=$(sha256sum "$tmp" | cut -c1-12)          # hash doubles as dedupe
@@ -62,13 +81,20 @@ toggle_pin() {
   note "Pinned"
 }
 
+# Alt+d on a pin means "get rid of this", so unlike unpin it does not put the
+# clip back -- the pin and the history row go together.
 delete_entry() {
-  local kind=$1 key=$2
+  local kind=$1 key=$2 preview
   if [ "$kind" = pin ]; then
-    rm -f "$PIN_DIR/$key.bin" "$PIN_DIR/$key.mime" "$PIN_DIR/$key.txt"; note "Unpinned"
+    preview=$(cat "$PIN_DIR/$key.txt" 2>/dev/null || true)
+    rm -f "$PIN_DIR/$key.bin" "$PIN_DIR/$key.mime" "$PIN_DIR/$key.txt"
+    if [ -n "$preview" ]; then
+      cliphist list | grep -F -- "$preview" | cliphist delete 2>/dev/null || true
+    fi
   else
-    printf '%s' "$key" | cliphist delete; note "Deleted"
+    printf '%s' "$key" | cliphist delete
   fi
+  note "Deleted"
 }
 
 wipe_history() {
