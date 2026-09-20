@@ -10,3 +10,5 @@ pavucontrol                 # waybar pulseaudio module on-click
 blueman                     # waybar bluetooth module on-click
 bluez                       # bluetooth stack
 bluez-utils                 # bluetoothctl, used by the bluetooth module
+cliphist                    # clipboard history store
+wl-clipboard                # wl-copy / wl-paste, used by cliphist
