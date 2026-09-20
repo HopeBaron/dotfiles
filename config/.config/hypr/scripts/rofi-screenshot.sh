@@ -50,9 +50,16 @@ done
 
 printf '%s\n' "$mode" > "$last_file"
 
+# "output" on its own still opens slurp to pick a monitor, which is a pointless
+# click on a single-head machine. hyprshot takes -m twice, and the second
+# "active" means "the monitor already focused" -- verified: without it the run
+# ends in "selection cancelled / invalid geometry" and writes nothing.
+args=(-m "$mode")
+[ "$mode" = "output" ] && args+=(-m active)
+
 case "$rc" in
   0)  mkdir -p "$outdir"
-      hyprshot -m "$mode" -o "$outdir" ;;
-  13) hyprshot -m "$mode" --clipboard-only ;;   # kb-custom-4 = Alt+c
+      hyprshot "${args[@]}" -o "$outdir" ;;
+  13) hyprshot "${args[@]}" --clipboard-only ;;   # kb-custom-4 = Alt+c
   *)  exit 0 ;;
 esac
