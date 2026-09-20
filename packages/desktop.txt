@@ -1,5 +1,9 @@
 # The Hyprland desktop itself. Grows as components are added.
 hyprland
+uwsm                        # session manager: keeps launched apps in the login
+                            # session's cgroup, not user@.service, so pkexec/
+                            # polkit can resolve them. Log in via the GDM entry
+                            # "Hyprland (uwsm-managed)", not plain "Hyprland".
 xdg-desktop-portal-hyprland
 kitty
 rofi                        # launcher + dmenu for window/power/clipboard menus (2.0 is Wayland-native)
