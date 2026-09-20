@@ -39,7 +39,7 @@ hl.monitor({
 
 -- Set programs that you use
 local terminal    = "kitty"
-local fileManager = "dolphin"
+local fileManager = terminal .. " -e yazi"   -- TUI, needs a terminal
 local scripts     = os.getenv("HOME") .. "/.config/hypr/scripts"
 local menu        = scripts .. "/rofi-launch.sh"
 
@@ -269,7 +269,7 @@ hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal))
 local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 -- closeWindowBind:set_enabled(false)
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
--- hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))  -- no file manager installed yet
+hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd(scripts .. "/rofi-clipboard.sh"))
 -- Fullscreen covers the whole output; maximized keeps the bar and gaps.
