@@ -73,6 +73,10 @@ end)
 
 hl.env("XCURSOR_SIZE", "24")
 hl.env("HYPRCURSOR_SIZE", "24")
+-- Qt has no theming of its own outside a DE; without this it falls back to a
+-- stock style ignoring every colour we set elsewhere. qt6ct's scheme is
+-- generated from the same palette (theme/render.sh) as everything else.
+hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
 
 
 -----------------------
