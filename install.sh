@@ -6,21 +6,18 @@
 # services, so none of that is repeated here.
 #
 #   ./install.sh              install packages, render colours, stow configs
-#   ./install.sh --nvidia     also install the NVIDIA stack and set DRM modeset
 #   ./install.sh --no-deploy  skip stow (packages only)
 #
 # Safe to re-run; every step is idempotent.
 set -euo pipefail
 
 repo=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-with_nvidia=0
 deploy=1
 
 for arg in "$@"; do
   case "$arg" in
-    --nvidia)    with_nvidia=1 ;;
     --no-deploy) deploy=0 ;;
-    -h|--help)   sed -n '2,12p' "$0"; exit 0 ;;
+    -h|--help)   sed -n '2,11p' "$0"; exit 0 ;;
     *) echo "unknown option: $arg" >&2; exit 2 ;;
   esac
 done
@@ -44,20 +41,6 @@ install_pkgs() {
 # leaves you installing packages built against libraries you do not have.
 say "Updating the system"
 sudo pacman -Syu --noconfirm
-
-if [ "$with_nvidia" -eq 1 ]; then
-  install_pkgs nvidia.txt
-  # Bootloader-agnostic: set the DRM modeset flag via modprobe rather than
-  # editing GRUB/systemd-boot entries. Hyprland will not start without it.
-  say "Enabling nvidia_drm modeset"
-  printf 'options nvidia_drm modeset=1 fbdev=1\n' \
-    | sudo tee /etc/modprobe.d/nvidia-hyprland.conf >/dev/null
-  # Regenerate the initramfs with whichever generator this system uses.
-  if   command -v dracut-rebuild >/dev/null; then sudo dracut-rebuild
-  elif command -v mkinitcpio >/dev/null; then sudo mkinitcpio -P
-  else echo "  note: regenerate your initramfs manually before rebooting." >&2
-  fi
-fi
 
 # tools.txt first: it carries stow and gettext, which the deploy steps below
 # call. EndeavourOS ships neither.
@@ -84,7 +67,4 @@ if [ "$deploy" -eq 1 ]; then
 fi
 
 say "Done."
-if [ "$with_nvidia" -eq 1 ]; then
-  echo "Reboot for the NVIDIA modeset change to take effect."
-fi
 echo "Log out and pick 'Hyprland' at your display manager."
