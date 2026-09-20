@@ -1,9 +1,13 @@
 # The Hyprland desktop itself. Grows as components are added.
 hyprland
 uwsm                        # session manager: keeps launched apps in the login
-                            # session's cgroup, not user@.service, so pkexec/
-                            # polkit can resolve them. Log in via the GDM entry
-                            # "Hyprland (uwsm-managed)", not plain "Hyprland".
+                            # session's cgroup, not user@.service. Log in via the
+                            # GDM entry "Hyprland (uwsm-managed)", not plain "Hyprland".
+hyprpolkitagent             # polkit auth agent (Hyprland's own). Without one
+                            # registered, pkexec falls back to a text prompt that
+                            # fails with "No session for cookie" on this system --
+                            # this fixes it for every app that needs polkit,
+                            # not just one.
 xdg-desktop-portal-hyprland
 kitty
 rofi                        # launcher + dmenu for window/power/clipboard menus (2.0 is Wayland-native)
