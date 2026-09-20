@@ -289,6 +289,7 @@ hl.bind(mainMod .. " + SHIFT + Tab",   hl.dsp.exec_cmd(scripts .. "/rofi-windows
 -- Power menu and notification centre.
 hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd(scripts .. "/rofi-power.sh"))
 hl.bind(mainMod .. " + N",      hl.dsp.exec_cmd("swaync-client -t -sw"))
+hl.bind("Print", hl.dsp.exec_cmd(scripts .. "/rofi-screenshot.sh"))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
 hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"))    -- dwindle only
 

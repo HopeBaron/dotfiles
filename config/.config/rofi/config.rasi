@@ -20,6 +20,7 @@ configuration {
     kb-custom-1:           "Alt+p";
     kb-custom-2:           "Alt+d";
     kb-custom-3:           "Alt+w";
+    kb-custom-4:           "Alt+c";
 }
 
 @theme "gruvbox-material"
