@@ -3,8 +3,13 @@
 {
   "layer": "top",
   "position": "top",
-  "height": 34,
+  "height": 38,
   "spacing": 0,
+  // The bar is transparent and the three module groups are drawn as floating
+  // islands (see style.css), so it needs to sit off the screen edges.
+  "margin-top": 6,
+  "margin-left": 10,
+  "margin-right": 10,
 
   "modules-left":   ["hyprland/workspaces"],
   "modules-center": ["clock"],
