@@ -216,8 +216,12 @@ hl.config({
 
 hl.config({
     misc = {
-        force_default_wallpaper = -1,    -- Set to 0 or 1 to disable the anime mascot wallpapers
-        disable_hyprland_logo   = false, -- If true disables the random hyprland logo / anime girl background. :(
+        -- No wallpaper daemon: Hyprland paints the root surface itself, so the
+        -- background is one palette colour and stays in sync with everything else.
+        -- Both of these must be off or the built-in mascot covers it.
+        force_default_wallpaper = 0,
+        disable_hyprland_logo   = true,
+        background_color        = tonumber("ff" .. c.bg0, 16),
     },
 })
 
