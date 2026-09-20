@@ -46,9 +46,21 @@ entry  { placeholder: "Type to filter"; placeholder-color: @grey1; cursor: text;
 
 listview {
     lines:        10;
+    /* Off by default: most menus are short enough not to need one. Long menus
+       (the cheat sheet) switch it on with -theme-str. */
     scrollbar:    false;
     fixed-height: false;
     spacing:      2px;
+}
+
+/* Styled here rather than in -theme-str so the colours still come from the
+   palette instead of being hardcoded at the call site. */
+scrollbar {
+    width:        4px;
+    handle-width: 4px;
+    handle-color: @grey1;
+    background-color: @bg1;
+    border-radius: 4px;
 }
 
 element {
