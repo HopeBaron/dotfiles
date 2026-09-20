@@ -2,3 +2,5 @@
 hyprland
 xdg-desktop-portal-hyprland
 kitty
+wofi                        # launcher (drun) + dmenu backend for the window switcher
+jq                          # wofi-windows.sh parses `hyprctl clients -j`

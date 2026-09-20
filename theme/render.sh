@@ -12,4 +12,5 @@ render() { envsubst < "$here/templates/$1" > "$repo/config/.config/$2"; echo "  
 echo "Rendering Gruvbox Material (dark/medium/material):"
 render hypr-colors.lua   hypr/colors.lua
 render kitty-colors.conf kitty/colors.conf
+render wofi-style.css    wofi/style.css
 echo "Done. Reload: hyprctl reload  /  kitty @ load-config"
