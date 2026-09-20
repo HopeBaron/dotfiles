@@ -290,8 +290,9 @@ hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager), { description = "File m
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }), { description = "Toggle floating" })
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd(scripts .. "/rofi-clipboard.sh"), { description = "Clipboard history" })
 -- Fullscreen covers the whole output; maximized keeps the bar and gaps.
-hl.bind(mainMod .. " + F",         hl.dsp.window.fullscreen({ mode = "fullscreen" }), { description = "Fullscreen" })
-hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "maximized" }), { description = "Maximize" })
+-- Plain F is maximize, not fullscreen -- it's the one used more often.
+hl.bind(mainMod .. " + F",         hl.dsp.window.fullscreen({ mode = "maximized" }), { description = "Maximize" })
+hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "fullscreen" }), { description = "Fullscreen" })
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu), { description = "App launcher" })
 
 -- Window switcher: Tab for the active workspace, SHIFT+Tab for every workspace.
