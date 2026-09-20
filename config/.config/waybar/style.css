@@ -81,7 +81,7 @@ window#waybar {
 
 #language,
 #cpu, #memory, #pulseaudio, #network, #bluetooth,
-#custom-notification, #tray, #custom-power {
+#custom-notification, #custom-power {
   padding: 0 8px;
   margin: 4px 0;
   background-color: transparent;
@@ -116,7 +116,15 @@ window#waybar {
   font-weight: bold;
 }
 
-#tray { padding: 0 6px; }
+/* The tray shares the centre island with the clock, so it gets a hairline
+   divider: same panel, but visibly a different zone. */
+#tray {
+  padding: 0 4px 0 10px;
+  margin: 6px 0 6px 8px;
+  border-left: 1px solid alpha(#5a524c, 0.7);
+}
+/* Note: GTK3 CSS has no :empty, so an empty tray still draws the hairline.
+   It is 1px at 70% alpha -- not worth a module-visibility workaround. */
 #tray menu {
   background-color: #32302f;
   color: #d4be98;

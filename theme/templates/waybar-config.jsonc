@@ -12,9 +12,9 @@
   "margin-right": 10,
 
   "modules-left":   ["hyprland/workspaces"],
-  "modules-center": ["clock"],
+  "modules-center": ["clock", "tray"],
   "modules-right":  ["hyprland/language", "cpu", "memory", "pulseaudio", "network",
-                     "bluetooth", "custom/notification", "tray", "custom/power"],
+                     "bluetooth", "custom/notification", "custom/power"],
 
   // Keyboard layout. Switched with SUPER+space (grp:win_space_toggle).
   "hyprland/language": {
@@ -36,8 +36,11 @@
   // Seconds, as asked. Tooltip shows the month calendar.
   "clock": {
     "interval": 1,
-    "format": "  {:%H:%M:%S}",
-    "format-alt": "  {:%a %d %b %Y}",
+    // No padding spaces in the format string: two leading spaces and none
+    // trailing pushed the text off-centre inside the island. Padding is the
+    // stylesheet's job (#clock), where it stays symmetric.
+    "format": "{:%H:%M:%S}",
+    "format-alt": "{:%a %d %b %Y}",
     "tooltip-format": "<tt><small>{calendar}</small></tt>",
     "calendar": {
       "mode": "month",
