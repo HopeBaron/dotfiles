@@ -1,25 +1,40 @@
 # dotfiles
 
-Hyprland desktop, themed Gruvbox Material. Targets a bare Arch install — every
-binary referenced by any config is listed in `packages/`.
+Hyprland desktop, themed Gruvbox Material. Every binary referenced by any
+config is listed in `packages/`.
+
+Baseline is an **EndeavourOS** install — its installer already provides the base
+packages, the NVIDIA driver, the display manager and the audio/network services,
+so `install.sh` does not repeat any of that.
 
 ## Install
 
 ```sh
 git clone <this repo> ~/dotfiles
 cd ~/dotfiles
-./install.sh --nvidia     # drop --nvidia on AMD/Intel
+./install.sh
 ```
 
-Then reboot (if `--nvidia`) and pick **Hyprland** at the display manager.
+Then log out and pick **Hyprland** at the display manager.
+
+On plain Arch rather than EndeavourOS:
+
+```sh
+./install.sh --bare-arch --nvidia   # drop --nvidia on AMD/Intel
+```
+
+`--bare-arch` adds the base packages and enables NetworkManager/wireplumber; it
+does *not* install a display manager, so either add one or start Hyprland from a
+TTY. `--nvidia` installs the driver stack, sets `nvidia_drm.modeset=1` via
+modprobe, and regenerates the initramfs — reboot afterwards.
 
 ## Layout
 
 ```
-install.sh              bootstrap: packages -> services -> render -> stow
-packages/base.txt       what a fresh archinstall lacks (audio, network, fonts, ...)
+install.sh              packages -> render -> stow
+packages/desktop.txt    Hyprland and its components (the default path)
+packages/base.txt       plain-Arch extras, only with --bare-arch
 packages/nvidia.txt     driver stack, only with --nvidia
-packages/desktop.txt    Hyprland and its components
 theme/palette.sh        SINGLE SOURCE OF TRUTH for colour
 theme/templates/        per-app colour templates, ${VAR} placeholders
 theme/render.sh         templates + palette -> generated colour files
