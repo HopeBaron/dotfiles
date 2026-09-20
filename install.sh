@@ -47,6 +47,11 @@ sudo pacman -Syu --noconfirm
 install_pkgs tools.txt
 install_pkgs desktop.txt
 
+# WantedBy=graphical-session.target, so enabling it is what makes it start --
+# a plain `systemctl --user start` would not survive the next login.
+say "Enabling the polkit agent"
+systemctl --user enable --now hyprpolkitagent.service
+
 # bluez ships disabled; the waybar bluetooth module stays empty without this.
 if [ -d /sys/class/bluetooth ] && [ -n "$(ls -A /sys/class/bluetooth 2>/dev/null)" ]; then
   say "Bluetooth controller found, enabling bluetooth.service"

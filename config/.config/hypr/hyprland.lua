@@ -52,13 +52,10 @@ local menu        = scripts .. "/rofi-launch.sh"
 
 -- Autostart necessary processes (like notifications daemons, status bars, etc.)
 hl.on("hyprland.start", function ()
-    -- Polkit agent. Without one registered, pkexec falls back to its own
-    -- text-mode agent, which fails outright on this system ("No session for
-    -- cookie") -- confirmed via journalctl and the same D-Bus call polkit uses
-    -- (GetSessionByPID), which does not resolve even Hyprland's own PID under
-    -- uwsm. Per the Hyprland wiki, this is a systemd --user unit, not a plain
-    -- binary: https://wiki.hypr.land/Hypr-Ecosystem/hyprpolkitagent/
-    hl.exec_cmd("systemctl --user start hyprpolkitagent")
+    -- Polkit agent: enabled via systemd (install.sh), not started here.
+    -- The shipped unit is WantedBy=graphical-session.target, which survives
+    -- `hyprctl reload` -- this hl.on block does not re-fire on reload, so an
+    -- exec_cmd here would only ever run once per login anyway.
     hl.exec_cmd("hyprpaper")
     hl.exec_cmd("waybar")
     hl.exec_cmd("swaync")   -- notification daemon + control centre
