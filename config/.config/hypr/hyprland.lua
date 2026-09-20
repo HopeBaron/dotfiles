@@ -268,6 +268,9 @@ local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close())
 hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"))
 -- hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))  -- no file manager installed yet
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
+-- Fullscreen covers the whole output; maximized keeps the bar and gaps.
+hl.bind(mainMod .. " + F",         hl.dsp.window.fullscreen({ mode = "fullscreen" }))
+hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "maximized" }))
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu))
 
 -- Window switcher: Tab for the active workspace, SHIFT+Tab for every workspace.
