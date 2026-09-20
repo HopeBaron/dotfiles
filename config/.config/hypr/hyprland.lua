@@ -52,6 +52,7 @@ local menu        = scripts .. "/rofi-launch.sh"
 
 -- Autostart necessary processes (like notifications daemons, status bars, etc.)
 hl.on("hyprland.start", function ()
+    hl.exec_cmd("hyprpaper")
     hl.exec_cmd("waybar")
     hl.exec_cmd("swaync")   -- notification daemon + control centre
     -- Clipboard history; the picker is SUPER+SHIFT+V.
