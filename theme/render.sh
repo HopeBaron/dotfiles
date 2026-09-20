@@ -7,12 +7,16 @@ repo=$(dirname "$here")
 
 set -a; . "$here/palette.sh"; set +a
 
-render() { envsubst < "$here/templates/$1" > "$repo/config/.config/$2"; echo "  rendered $2"; }
+# Substitute ONLY the palette names. Bare `envsubst` would also expand $HOME
+# and friends, baking this machine's paths into committed files.
+vars=$(sed -n 's/^\([A-Z0-9_]\+\)=.*/${\1}/p' "$here/palette.sh" | tr '\n' ' ')
+
+render() { envsubst "$vars" < "$here/templates/$1" > "$repo/config/.config/$2"; echo "  rendered $2"; }
 
 echo "Rendering Gruvbox Material (dark/medium/material):"
 render hypr-colors.lua   hypr/colors.lua
 render kitty-colors.conf kitty/colors.conf
-render wofi-style.css    wofi/style.css
+render rofi-theme.rasi   rofi/gruvbox-material.rasi
 render waybar-config.jsonc waybar/config.jsonc
 render waybar-style.css  waybar/style.css
 render swaync-style.css  swaync/style.css

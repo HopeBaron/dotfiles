@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Window switcher: list open windows and focus the chosen one.
 #
-#   wofi-windows.sh --workspace   windows on the active workspace (default)
-#   wofi-windows.sh --global      every window, tagged with its workspace
+#   rofi-windows.sh --workspace   windows on the active workspace (default)
+#   rofi-windows.sh --global      every window, tagged with its workspace
 #
-# wofi has no window-switcher mode, so this feeds `hyprctl clients` through
-# `wofi --show dmenu` and dispatches focus by window address.
+# rofi has a built-in `window` mode, but it only sees the active workspace on
+# Hyprland, so the list is built from `hyprctl clients` instead.
 set -euo pipefail
 
 scope=${1:---workspace}
@@ -44,9 +44,8 @@ mapfile -t rows < <(
 
 [ "${#rows[@]}" -eq 0 ] && exit 0
 
-choice=$(printf '%s\n' "${rows[@]}" | cut -f2- \
-  | wofi --show dmenu --prompt "$prompt" --width 46% --height 44% --cache-file /dev/null)
+choice=$(printf '%s\n' "${rows[@]}" | cut -f2- | rofi -dmenu -i -p "$prompt")
 [ -z "$choice" ] && exit 0
 
 addr=$(printf '%s\n' "${rows[@]}" | awk -F'\t' -v c="$choice" '$2 == c { print $1; exit }')
-[ -n "$addr" ] && hyprctl dispatch focuswindow "address:$addr"
+[ -n "$addr" ] && hyprctl dispatch "hl.dsp.focus({ window = \"address:$addr\" })"

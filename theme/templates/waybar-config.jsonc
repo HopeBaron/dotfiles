@@ -93,6 +93,6 @@
   "custom/power": {
     "format": "⏻",
     "tooltip": false,
-    "on-click": "$HOME/.config/hypr/scripts/wofi-power.sh"
+    "on-click": "$HOME/.config/hypr/scripts/rofi-power.sh"
   }
 }

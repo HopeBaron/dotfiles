@@ -1,0 +1,25 @@
+/* rofi -- hand-written. Colours live in gruvbox-material.rasi (generated;
+   see theme/render.sh). Per-menu flags come from the scripts in
+   ~/.config/hypr/scripts/, so nothing here pins a mode. */
+
+configuration {
+    modes:                 "drun,run,window";
+    show-icons:            true;
+    icon-theme:            "hicolor";
+    drun-display-format:   "{name}";
+    display-drun:          "Apps";
+    display-window:        "Windows";
+    matching:              "fuzzy";
+    sort:                  true;
+    case-sensitive:        false;
+    hover-select:          true;
+    me-select-entry:       "MousePrimary";
+    me-accept-entry:       "MouseDPrimary";
+    /* Action keys used by the clipboard menu. Declared here so a conflict
+       with a built-in binding fails loudly at startup rather than silently. */
+    kb-custom-1:           "Alt+p";
+    kb-custom-2:           "Alt+d";
+    kb-custom-3:           "Alt+w";
+}
+
+@theme "gruvbox-material"
