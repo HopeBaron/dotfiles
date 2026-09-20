@@ -295,9 +295,9 @@ hl.bind(mainMod .. " + F",         hl.dsp.window.fullscreen({ mode = "maximized"
 hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "fullscreen" }), { description = "Fullscreen" })
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu), { description = "App launcher" })
 
--- Window switcher: Tab for the active workspace, SHIFT+Tab for every workspace.
-hl.bind(mainMod .. " + Tab",           hl.dsp.exec_cmd(scripts .. "/rofi-windows.sh --workspace"), { description = "Windows (this workspace)" })
-hl.bind(mainMod .. " + SHIFT + Tab",   hl.dsp.exec_cmd(scripts .. "/rofi-windows.sh --global"), { description = "Windows (all workspaces)" })
+-- Window switcher: one menu, Alt+a toggles this-workspace/all-workspaces
+-- inside it instead of a separate SHIFT+Tab bind.
+hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd(scripts .. "/rofi-windows.sh"), { description = "Windows" })
 
 -- Power menu and notification centre.
 hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd(scripts .. "/rofi-power.sh"), { description = "Power menu" })
