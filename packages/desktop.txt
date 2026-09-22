@@ -1,5 +1,6 @@
 # The Hyprland desktop itself. Grows as components are added.
 hyprland
+hyprpm                      # Hyprland's own plugin manager
 uwsm                        # session manager: keeps launched apps in the login
                             # session's cgroup, not user@.service. Log in via the
                             # GDM entry "Hyprland (uwsm-managed)", not plain "Hyprland".
