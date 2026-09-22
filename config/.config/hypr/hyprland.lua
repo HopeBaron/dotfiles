@@ -132,8 +132,12 @@ hl.config({
         col = {
             border_active          = "rgba(" .. c.yellow .. "ee)",
             border_inactive        = "rgba(" .. c.bg3 .. "aa)",
-            border_locked_active   = "rgba(" .. c.orange .. "ee)",
-            border_locked_inactive = "rgba(" .. c.bg3 .. "aa)",
+            -- Locked keeps its own hue even when not focused (red at lower
+            -- alpha) -- reusing plain bg3 here would make a locked group's
+            -- background tabs indistinguishable from an ordinary unlocked
+            -- one, defeating the point of a locked colour at all.
+            border_locked_active   = "rgba(" .. c.red .. "ee)",
+            border_locked_inactive = "rgba(" .. c.red .. "aa)",
         },
         groupbar = {
             enabled       = true,
@@ -144,14 +148,20 @@ hl.config({
             col = {
                 active          = "rgba(" .. c.yellow .. "ee)",
                 inactive        = "rgba(" .. c.bg3 .. "aa)",
-                locked_active   = "rgba(" .. c.orange .. "ee)",
-                locked_inactive = "rgba(" .. c.bg3 .. "aa)",
+                locked_active   = "rgba(" .. c.red .. "ee)",
+                locked_inactive = "rgba(" .. c.red .. "aa)",
             },
-            -- Dark-on-accent for the active tab, matching waybar's active
-            -- workspace (bg0 text on a yellow background); muted grey for
-            -- everything else, matching this repo's usual "inactive" tone.
-            text_color          = "rgba(" .. c.bg0 .. "ff)",
-            text_color_inactive = "rgba(" .. c.grey1 .. "ff)",
+            -- Dark text on the two full-strength accent backgrounds (bg0 on
+            -- yellow, matching waybar's active workspace exactly, and bg0 on
+            -- red for the same reason); fg1 -- not grey1 -- on the two
+            -- neutral/muted backgrounds. grey1 is this repo's PLACEHOLDER
+            -- tone (rofi's entry placeholder-color), meant to read as a
+            -- de-emphasised hint; a tab title is real content someone needs
+            -- to read, and grey1-on-bg3 was too low-contrast to be legible.
+            text_color                 = "rgba(" .. c.bg0 .. "ff)",
+            text_color_inactive        = "rgba(" .. c.fg1 .. "ff)",
+            text_color_locked_active   = "rgba(" .. c.bg0 .. "ff)",
+            text_color_locked_inactive = "rgba(" .. c.fg1 .. "ff)",
         },
     },
 
