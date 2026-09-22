@@ -124,6 +124,37 @@ hl.config({
         layout = "dwindle",
     },
 
+    -- Window groups (tabs): SUPER+G to group/ungroup, [ ] to cycle tabs,
+    -- SUPER+SHIFT+G to lock. Colours reuse what's already used for "active" /
+    -- "inactive" two lines up, and "locked" reuses the orange half of the
+    -- active-border gradient rather than inventing a third accent.
+    group = {
+        col = {
+            border_active          = "rgba(" .. c.yellow .. "ee)",
+            border_inactive        = "rgba(" .. c.bg3 .. "aa)",
+            border_locked_active   = "rgba(" .. c.orange .. "ee)",
+            border_locked_inactive = "rgba(" .. c.bg3 .. "aa)",
+        },
+        groupbar = {
+            enabled       = true,
+            render_titles = true,
+            gradients     = false,
+            height        = 18,
+            font_family   = "JetBrainsMono Nerd Font",
+            col = {
+                active          = "rgba(" .. c.yellow .. "ee)",
+                inactive        = "rgba(" .. c.bg3 .. "aa)",
+                locked_active   = "rgba(" .. c.orange .. "ee)",
+                locked_inactive = "rgba(" .. c.bg3 .. "aa)",
+            },
+            -- Dark-on-accent for the active tab, matching waybar's active
+            -- workspace (bg0 text on a yellow background); muted grey for
+            -- everything else, matching this repo's usual "inactive" tone.
+            text_color          = "rgba(" .. c.bg0 .. "ff)",
+            text_color_inactive = "rgba(" .. c.grey1 .. "ff)",
+        },
+    },
+
     decoration = {
         rounding       = 10,
         rounding_power = 2,
@@ -293,6 +324,13 @@ hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd(scripts .. "/rofi-clipboard.s
 -- Plain F is maximize, not fullscreen -- it's the one used more often.
 hl.bind(mainMod .. " + F",         hl.dsp.window.fullscreen({ mode = "maximized" }), { description = "Maximize" })
 hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "fullscreen" }), { description = "Fullscreen" })
+
+-- Window groups (tabs). bracketleft/right, like "slash" above, is the X11
+-- keysym name -- Hyprland's Lua binds take keysym names, not literal chars.
+hl.bind(mainMod .. " + G",         hl.dsp.group.toggle(), { description = "Group/ungroup window" })
+hl.bind(mainMod .. " + SHIFT + G", hl.dsp.group.lock(),   { description = "Lock groups" })
+hl.bind(mainMod .. " + bracketleft",  hl.dsp.group.prev(), { description = "Previous tab" })
+hl.bind(mainMod .. " + bracketright", hl.dsp.group.next(), { description = "Next tab" })
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu), { description = "App launcher" })
 
 -- Window switcher: one menu, Alt+a toggles this-workspace/all-workspaces
