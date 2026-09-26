@@ -17,13 +17,23 @@ note() {
   fi
 }
 
+# True when a row's (possibly cliphist-truncated, "…"-suffixed) preview is a
+# prefix of the current clipboard, normalized the same way cliphist itself
+# does (whitespace/newlines collapsed to single spaces, leading one trimmed).
+# A straight equality check doesn't work: cliphist's own preview is cut much
+# shorter than our 200-char truncation and ends in "…", so it never equals
+# the fuller string outright.
+matches_current() {
+  local preview=$1
+  [[ -n "$current" && "$current" == "${preview%…}"* ]]
+}
+
 # Load and merge pinned clips and cliphist items into unified menu rows
 collect_rows() {
   local n=0 file id preview line mark
   local current
-  # Truncated the same way as each row's preview, so the comparison below is
-  # apples-to-apples; a non-text clipboard (e.g. an image) just never matches.
-  current=$(wl-paste 2>/dev/null | head -c 200 || true)
+  # A non-text clipboard (e.g. an image) just never matches.
+  current=$(wl-paste 2>/dev/null | tr -s '[:space:]' ' ' | sed 's/^ //' | head -c 200 || true)
   declare -A pinned=()
 
   # 1. Collect Pinned Clips (Processed first to avoid duplicates)
@@ -34,7 +44,7 @@ collect_rows() {
     pinned["$preview"]=1
 
     n=$((n + 1))
-    mark=" "; [[ -n "$current" && "$preview" == "$current" ]] && mark="*"
+    mark=" "; matches_current "$preview" && mark="*"
     printf 'pin%s%s%s%s %d  󰐃 %s\n' "$US" "$id" "$US" "$mark" "$n" "$preview"
   done < <(ls -t "$PIN_DIR"/*.txt 2>/dev/null || true)
 
@@ -45,7 +55,7 @@ collect_rows() {
     [[ -n "${pinned["$preview"]:-}" ]] && continue # Skip if already shown as a pin
 
     n=$((n + 1))
-    mark=" "; [[ -n "$current" && "$preview" == "$current" ]] && mark="*"
+    mark=" "; matches_current "$preview" && mark="*"
     printf 'hist%s%s%s%s %d  %s\n' "$US" "$line" "$US" "$mark" "$n" "$preview"
   done < <(cliphist list 2>/dev/null || true)
 }
