@@ -349,9 +349,9 @@ hl.bind(mainMod .. " + Tab", hl.dsp.exec_cmd(scripts .. "/rofi-windows.sh"), { d
 -- Power menu and notification centre.
 hl.bind(mainMod .. " + Escape", hl.dsp.exec_cmd(scripts .. "/rofi-power.sh"), { description = "Power menu" })
 hl.bind(mainMod .. " + N",      hl.dsp.exec_cmd("swaync-client -t -sw"), { description = "Notification centre" })
--- Plain SUPER+L is hy3's focus-right; CTRL disambiguates it, mirroring the
--- Windows/GNOME lock convention. Also reachable via the power menu.
-hl.bind(mainMod .. " + CTRL + L", hl.dsp.exec_cmd("hyprlock"), { description = "Lock screen" })
+-- grave is the X11 keysym name for the backtick/` key. Also reachable via
+-- the power menu.
+hl.bind(mainMod .. " + grave", hl.dsp.exec_cmd("hyprlock"), { description = "Lock screen" })
 hl.bind("Print", hl.dsp.exec_cmd(scripts .. "/rofi-screenshot.sh"), { description = "Screenshot menu" })
 hl.bind(mainMod .. " + SHIFT + slash", hl.dsp.exec_cmd(scripts .. "/rofi-help.sh"), { description = "This cheat sheet" })
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo(), { description = "Pseudo-tile" })
