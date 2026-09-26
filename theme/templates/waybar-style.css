@@ -61,7 +61,7 @@ window#waybar {
 /* The only always-on accent in the bar: where you are is worth a colour. */
 #workspaces button.active {
   color: #${BG0};
-  background-color: #${YELLOW};
+  background-color: #${GREEN};
 }
 
 #workspaces button.urgent {

@@ -6,9 +6,10 @@
  *      everything else is a neutral tone.
  *   2. Radius scale 12 / 8 / 6, outer to inner -- nested corners must shrink
  *      or the inner ones look wrong against the outer curve.
- *   3. Spacing on a 4px scale.
- *   4. The selected row is marked by an accent EDGE plus a raised background,
- *      not a saturated fill. A full-bleed fill fights the text it carries.
+ *   3. Spacing on a 2px scale, kept tight -- these menus should be compact.
+ *   4. The selected row is a solid accent pill (fill + dark text), matching
+ *      waybar's #workspaces button.active exactly rather than inventing a
+ *      second "selected" language.
  */
 
 * {
@@ -23,47 +24,41 @@
     grey2:    #${GREY2};
     red:      #${RED};
     orange:   #${ORANGE};
-    yellow:   #${YELLOW};
+    green:    #${GREEN};
 
     background-color: transparent;
     text-color:       @fg1;
-    font:             "JetBrainsMono Nerd Font 12";
+    font:             "JetBrainsMono Nerd Font 10";
 }
 
 window {
     background-color: @bg0;
     border:           1px;
-    border-color:     @bg5;
-    border-radius:    12px;
-    width:            46%;
-    padding:          12px;
+    border-color:     @green;
+    border-radius:    10px;
+    width:            32%;
+    padding:          6px;
 }
 
 /* rofi puts `message` under the inputbar by default; the order is set
    explicitly to push the footer to the bottom of the window. */
 mainbox {
     children: [ inputbar, listview, message ];
-    spacing:  12px;
+    spacing:  6px;
 }
 
+/* No prompt widget -- a pretext like "Windows" or "Screenshot" before the
+   filter is chrome the eye has to skip past. The entry's own placeholder
+   already says "type to filter"; that is enough context. */
 inputbar {
     background-color: @bg1;
-    border-radius:    8px;
-    padding:          8px 12px;
-    children:         [ prompt, entry ];
-    spacing:          10px;
-}
-
-/* The prompt is the one piece of chrome that carries the accent, so the eye
-   lands on "what am I picking" before the list. */
-prompt {
-    text-color:  @yellow;
-    font:        "JetBrainsMono Nerd Font Bold 12";
-    vertical-align: 0.5;
+    border-radius:    7px;
+    padding:          5px 8px;
+    children:         [ entry ];
 }
 
 entry {
-    placeholder:       "Type to filter";
+    placeholder:       "Filter";
     placeholder-color: @grey1;
     text-color:        @fg0;
     cursor:            text;
@@ -76,7 +71,7 @@ listview {
        it on with -theme-str. */
     scrollbar:    false;
     fixed-height: false;
-    spacing:      4px;
+    spacing:      1px;
 }
 
 /* Styled here rather than at the call site so the colours still come from the
@@ -90,8 +85,8 @@ scrollbar {
 }
 
 element {
-    padding:       8px 10px;
-    border-radius: 6px;
+    padding:       4px 8px;
+    border-radius: 5px;
     cursor:        pointer;
     text-color:    @fg1;
 }
@@ -102,32 +97,32 @@ element normal active  { text-color: @orange; }
 
 element alternate normal { background-color: transparent; }
 
-/* Selection: raised surface + a 3px accent edge. Readable, and it does not
-   invert the row's text the way a saturated fill does. */
+/* Selection: a solid accent pill, same visual language as waybar's active
+   workspace indicator -- dark text on a full-strength fill, not an edge. */
 element selected {
-    background-color: @bg3;
-    text-color:       @fg0;
-    border:           0px 0px 0px 3px;
-    border-color:     @yellow;
-    border-radius:    6px;
+    background-color: @green;
+    text-color:       @bg0;
+    border-radius:    5px;
 }
 
-element selected urgent { border-color: @red; }
-element selected active { border-color: @orange; }
+element selected urgent { background-color: @red; }
+element selected active { background-color: @orange; }
 
 element-text { background-color: inherit; text-color: inherit; vertical-align: 0.5; }
-element-icon { background-color: transparent; size: 20px; padding: 0 10px 0 0; }
+element-icon { background-color: transparent; size: 16px; padding: 0 8px 0 0; }
 
-/* Fuzzy-match highlight, readable both on a normal row and a selected one. */
-element-text highlight                  { text-color: @yellow; }
-element selected element-text highlight { text-color: @yellow; underline: true; }
+/* Fuzzy-match highlight: colour-as-accent on a normal row, since the row's
+   background is neutral there. On a selected row the background already IS
+   the accent, so colour can't do double duty -- underline carries it instead. */
+element-text highlight                  { text-color: @green; }
+element selected element-text highlight { text-color: @bg0; underline: true; }
 
 /* Footer: a quiet strip of key hints. Deliberately the lowest-contrast thing
    in the window -- it is reference, not content. */
 message {
     background-color: @bg1;
-    border-radius:    8px;
-    padding:          8px 12px;
+    border-radius:    7px;
+    padding:          5px 8px;
 }
 
 textbox {

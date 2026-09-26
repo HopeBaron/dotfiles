@@ -52,6 +52,12 @@ local menu        = scripts .. "/rofi-launch.sh"
 
 -- Autostart necessary processes (like notifications daemons, status bars, etc.)
 hl.on("hyprland.start", function ()
+    -- hyprpm's "enabled" state doesn't auto-inject into a fresh Hyprland
+    -- process on boot -- it has to be reloaded every session, chained with a
+    -- config reload so hy3 actually takes effect instead of silently falling
+    -- back to whatever `general.layout` resolves to without it loaded.
+    hl.exec_cmd("hyprpm reload -n && hyprctl reload")
+
     -- Polkit agent: enabled via systemd (install.sh), not started here.
     -- The shipped unit is WantedBy=graphical-session.target, which survives
     -- `hyprctl reload` -- this hl.on block does not re-fire on reload, so an
@@ -105,13 +111,13 @@ hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
 -- Refer to https://wiki.hypr.land/Configuring/Basics/Variables/
 hl.config({
     general = {
-        gaps_in  = 5,
-        gaps_out = 20,
+        gaps_in  = 2,
+        gaps_out = 4,
 
         border_size = 2,
 
         col = {
-            active_border   = { colors = {"rgba(" .. c.yellow .. "ee)", "rgba(" .. c.orange .. "ee)"}, angle = 45 },
+            active_border   = "rgba(" .. c.green .. "ee)",
             inactive_border = "rgba(" .. c.bg3 .. "aa)",
         },
 
@@ -121,47 +127,37 @@ hl.config({
         -- Please see https://wiki.hypr.land/Configuring/Advanced-and-Cool/Tearing/ before you turn this on
         allow_tearing = false,
 
-        layout = "dwindle",
+        layout = "hy3",
     },
 
-    -- Window groups (tabs): SUPER+G to group/ungroup, [ ] to cycle tabs,
-    -- SUPER+SHIFT+G to lock. Colours reuse what's already used for "active" /
-    -- "inactive" two lines up, and "locked" reuses the orange half of the
-    -- active-border gradient rather than inventing a third accent.
-    group = {
-        col = {
-            border_active          = "rgba(" .. c.yellow .. "ee)",
-            border_inactive        = "rgba(" .. c.bg3 .. "aa)",
-            -- Locked keeps its own hue even when not focused (red at lower
-            -- alpha) -- reusing plain bg3 here would make a locked group's
-            -- background tabs indistinguishable from an ordinary unlocked
-            -- one, defeating the point of a locked colour at all.
-            border_locked_active   = "rgba(" .. c.red .. "ee)",
-            border_locked_inactive = "rgba(" .. c.red .. "aa)",
-        },
-        groupbar = {
-            enabled       = true,
-            render_titles = true,
-            gradients     = false,
-            height        = 18,
-            font_family   = "JetBrainsMono Nerd Font",
-            col = {
-                active          = "rgba(" .. c.yellow .. "ee)",
-                inactive        = "rgba(" .. c.bg3 .. "aa)",
-                locked_active   = "rgba(" .. c.red .. "ee)",
-                locked_inactive = "rgba(" .. c.red .. "aa)",
+    -- hy3's own tab-group theming (SUPER+W to group/ungroup, [ ] to cycle
+    -- tabs, SUPER+SHIFT+W to lock). hy3 has its own tab bar, entirely
+    -- separate from Hyprland's native `group`/`groupbar` config above (which
+    -- is now unused, since nothing triggers native grouping with hy3 active).
+    -- Green is the primary accent; locked tabs get their own red so a locked
+    -- group stays visually distinct rather than just looking like any other
+    -- active tab.
+    plugin = {
+        hy3 = {
+            tabs = {
+                colors = {
+                    active        = "rgba(" .. c.green .. "ee)",
+                    active_border = "rgba(" .. c.green .. "ee)",
+                    active_text   = "rgba(" .. c.bg0 .. "ff)",
+
+                    focused        = "rgba(" .. c.green .. "ee)",
+                    focused_border = "rgba(" .. c.green .. "ee)",
+                    focused_text   = "rgba(" .. c.bg0 .. "ff)",
+
+                    inactive        = "rgba(" .. c.bg3 .. "aa)",
+                    inactive_border = "rgba(" .. c.bg3 .. "aa)",
+                    inactive_text   = "rgba(" .. c.fg1 .. "ff)",
+
+                    locked        = "rgba(" .. c.red .. "ee)",
+                    locked_border = "rgba(" .. c.red .. "ee)",
+                    locked_text   = "rgba(" .. c.bg0 .. "ff)",
+                },
             },
-            -- Dark text on the two full-strength accent backgrounds (bg0 on
-            -- yellow, matching waybar's active workspace exactly, and bg0 on
-            -- red for the same reason); fg1 -- not grey1 -- on the two
-            -- neutral/muted backgrounds. grey1 is this repo's PLACEHOLDER
-            -- tone (rofi's entry placeholder-color), meant to read as a
-            -- de-emphasised hint; a tab title is real content someone needs
-            -- to read, and grey1-on-bg3 was too low-contrast to be legible.
-            text_color                 = "rgba(" .. c.bg0 .. "ff)",
-            text_color_inactive        = "rgba(" .. c.fg1 .. "ff)",
-            text_color_locked_active   = "rgba(" .. c.bg0 .. "ff)",
-            text_color_locked_inactive = "rgba(" .. c.fg1 .. "ff)",
         },
     },
 
@@ -323,24 +319,26 @@ hl.device({
 local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 
 -- Example binds, see https://wiki.hypr.land/Configuring/Basics/Binds/ for more
-hl.bind(mainMod .. " + Q", hl.dsp.exec_cmd(terminal), { description = "Terminal" })
-local closeWindowBind = hl.bind(mainMod .. " + C", hl.dsp.window.close(), { description = "Close window" })
+hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal), { description = "Terminal" })
+local closeWindowBind = hl.bind(mainMod .. " + X", hl.dsp.window.close(), { description = "Close window" })
 -- closeWindowBind:set_enabled(false)
-hl.bind(mainMod .. " + M", hl.dsp.exec_cmd("command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"), { description = "Exit Hyprland" })
+hl.bind(mainMod .. " + SHIFT + X", hl.dsp.window.kill(), { description = "Force close window" })
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager), { description = "File manager (yazi)" })
-hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }), { description = "Toggle floating" })
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd(scripts .. "/rofi-clipboard.sh"), { description = "Clipboard history" })
 -- Fullscreen covers the whole output; maximized keeps the bar and gaps.
 -- Plain F is maximize, not fullscreen -- it's the one used more often.
 hl.bind(mainMod .. " + F",         hl.dsp.window.fullscreen({ mode = "maximized" }), { description = "Maximize" })
 hl.bind(mainMod .. " + SHIFT + F", hl.dsp.window.fullscreen({ mode = "fullscreen" }), { description = "Fullscreen" })
+hl.bind(mainMod .. " + SHIFT + Space", hl.dsp.window.float({ action = "toggle" }), { description = "Toggle floating" })
 
--- Window groups (tabs). bracketleft/right, like "slash" above, is the X11
--- keysym name -- Hyprland's Lua binds take keysym names, not literal chars.
-hl.bind(mainMod .. " + G",         hl.dsp.group.toggle(), { description = "Group/ungroup window" })
-hl.bind(mainMod .. " + SHIFT + G", hl.dsp.group.lock(),   { description = "Lock groups" })
-hl.bind(mainMod .. " + bracketleft",  hl.dsp.group.prev(), { description = "Previous tab" })
-hl.bind(mainMod .. " + bracketright", hl.dsp.group.next(), { description = "Next tab" })
+-- Window groups (tabs), hy3's own tab-group system -- not Hyprland's native
+-- groups, which hy3's tree doesn't participate in. bracketleft/right, like
+-- "slash" above, is the X11 keysym name -- Hyprland's Lua binds take keysym
+-- names, not literal chars.
+hl.bind(mainMod .. " + W",         hl.plugin.hy3.make_group("tab", { toggle = true }), { description = "Tab-group/ungroup window" })
+hl.bind(mainMod .. " + SHIFT + W", hl.plugin.hy3.lock_tab(), { description = "Lock tab group" })
+hl.bind(mainMod .. " + bracketleft",  hl.plugin.hy3.focus_tab({ direction = "l" }), { description = "Previous tab" })
+hl.bind(mainMod .. " + bracketright", hl.plugin.hy3.focus_tab({ direction = "r" }), { description = "Next tab" })
 hl.bind(mainMod .. " + R", hl.dsp.exec_cmd(menu), { description = "App launcher" })
 
 -- Window switcher: one menu, Alt+a toggles this-workspace/all-workspaces
@@ -353,13 +351,40 @@ hl.bind(mainMod .. " + N",      hl.dsp.exec_cmd("swaync-client -t -sw"), { descr
 hl.bind("Print", hl.dsp.exec_cmd(scripts .. "/rofi-screenshot.sh"), { description = "Screenshot menu" })
 hl.bind(mainMod .. " + SHIFT + slash", hl.dsp.exec_cmd(scripts .. "/rofi-help.sh"), { description = "This cheat sheet" })
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo(), { description = "Pseudo-tile" })
-hl.bind(mainMod .. " + J", hl.dsp.layout("togglesplit"), { description = "Toggle split direction" })    -- dwindle only
+-- hy3 has no dedicated "toggle split direction" dispatcher; change_group's
+-- "opposite" action flips the current group between h/v, which is the same
+-- thing.
+hl.bind(mainMod .. " + T", hl.plugin.hy3.change_group("opposite"), { description = "Toggle split direction" })
+hl.bind(mainMod .. " + V", hl.plugin.hy3.change_group("v"), { description = "Split vertical" })
+hl.bind(mainMod .. " + C", hl.plugin.hy3.change_group("h"), { description = "Split horizontal" })
 
--- Move focus with mainMod + arrow keys
-hl.bind(mainMod .. " + left",  hl.dsp.focus({ direction = "left" }), { description = "Focus left" })
-hl.bind(mainMod .. " + right", hl.dsp.focus({ direction = "right" }), { description = "Focus right" })
-hl.bind(mainMod .. " + up",    hl.dsp.focus({ direction = "up" }), { description = "Focus up" })
-hl.bind(mainMod .. " + down",  hl.dsp.focus({ direction = "down" }), { description = "Focus down" })
+-- Move focus with mainMod + arrow keys, or vim-style hjkl -- both call the
+-- same hy3 dispatcher, so either habit works identically.
+hl.bind(mainMod .. " + left",  hl.plugin.hy3.move_focus("l"), { description = "Focus left" })
+hl.bind(mainMod .. " + right", hl.plugin.hy3.move_focus("r"), { description = "Focus right" })
+hl.bind(mainMod .. " + up",    hl.plugin.hy3.move_focus("u"), { description = "Focus up" })
+hl.bind(mainMod .. " + down",  hl.plugin.hy3.move_focus("d"), { description = "Focus down" })
+hl.bind(mainMod .. " + H", hl.plugin.hy3.move_focus("l"), { description = "Focus left" })
+hl.bind(mainMod .. " + L", hl.plugin.hy3.move_focus("r"), { description = "Focus right" })
+hl.bind(mainMod .. " + K", hl.plugin.hy3.move_focus("u"), { description = "Focus up" })
+hl.bind(mainMod .. " + J", hl.plugin.hy3.move_focus("d"), { description = "Focus down" })
+
+-- Move the focused window through the tree with mainMod + SHIFT + direction,
+-- arrows or hjkl. `once` moves it exactly one step instead of hy3's default
+-- of repeatedly re-parenting until it can't move any further.
+hl.bind(mainMod .. " + SHIFT + left",  hl.plugin.hy3.move_window("l", { once = true }), { description = "Move window left" })
+hl.bind(mainMod .. " + SHIFT + right", hl.plugin.hy3.move_window("r", { once = true }), { description = "Move window right" })
+hl.bind(mainMod .. " + SHIFT + up",    hl.plugin.hy3.move_window("u", { once = true }), { description = "Move window up" })
+hl.bind(mainMod .. " + SHIFT + down",  hl.plugin.hy3.move_window("d", { once = true }), { description = "Move window down" })
+hl.bind(mainMod .. " + SHIFT + H", hl.plugin.hy3.move_window("l", { once = true }), { description = "Move window left" })
+hl.bind(mainMod .. " + SHIFT + L", hl.plugin.hy3.move_window("r", { once = true }), { description = "Move window right" })
+hl.bind(mainMod .. " + SHIFT + K", hl.plugin.hy3.move_window("u", { once = true }), { description = "Move window up" })
+hl.bind(mainMod .. " + SHIFT + J", hl.plugin.hy3.move_window("d", { once = true }), { description = "Move window down" })
+
+-- Raise focus to the parent group / lower it back into the child -- hy3's
+-- equivalent of i3's "focus parent".
+hl.bind(mainMod .. " + A",         hl.plugin.hy3.change_focus("raise"), { description = "Focus parent (raise)" })
+hl.bind(mainMod .. " + SHIFT + A", hl.plugin.hy3.change_focus("lower"), { description = "Focus child (lower)" })
 
 -- Switch workspaces with mainMod + [0-9]
 -- Move active window to a workspace with mainMod + SHIFT + [0-9]
@@ -370,8 +395,8 @@ for i = 1, 10 do
 end
 
 -- Example special workspace (scratchpad)
-hl.bind(mainMod .. " + S",         hl.dsp.workspace.toggle_special("magic"), { description = "Scratchpad" })
-hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:magic" }), { description = "Move to scratchpad" })
+hl.bind(mainMod .. " + Q",         hl.dsp.workspace.toggle_special("magic"), { description = "Scratchpad" })
+hl.bind(mainMod .. " + SHIFT + Q", hl.dsp.window.move({ workspace = "special:magic" }), { description = "Move to scratchpad" })
 
 -- Scroll through existing workspaces with mainMod + scroll
 hl.bind(mainMod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
@@ -436,6 +461,15 @@ hl.window_rule({
 --     no_anim = true,
 -- })
 -- overlayLayerRule:set_enabled(false)
+
+-- rofi's own layer fades/scales in by default, which reads as lag before a
+-- screenshot mode is even picked -- killing rofi's own animation makes the
+-- menu appear instantly instead.
+hl.layer_rule({
+    name  = "no-anim-rofi",
+    match = { namespace = "^rofi$" },
+    no_anim = true,
+})
 
 -- Hyprland-run windowrule
 hl.window_rule({
