@@ -1,7 +1,7 @@
 *.bak
 *.swp
 
-# Wallpaper images: the path lives in-repo (hyprpaper.conf, rofi-wallpaper.sh),
-# but the binaries themselves don't belong in git history.
+# Wallpaper images: the path lives in-repo (hyprpaper.conf), but the
+# binaries themselves don't belong in git history.
 /wallpapers/*
 !/wallpapers/.gitkeep

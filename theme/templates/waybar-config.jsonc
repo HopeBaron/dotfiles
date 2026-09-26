@@ -27,13 +27,14 @@
   },
 
   "hyprland/workspaces": {
-    // No "on-click" here on purpose: the module already switches workspace
-    // on click by default. Setting "on-click" to anything (including the
-    // "activate" string a lot of sample configs paste in) REPLACES that
-    // built-in behaviour with a literal shell command -- `activate` isn't a
-    // real command, so it silently did nothing on every click.
+    // No "on-click" here on purpose. Click-to-switch is non-functional on
+    // this system regardless -- this Hyprland build's Lua config rejects
+    // the classic `dispatch <name> <args>` IPC syntax waybar's built-in
+    // click handler sends (server-side, for any client, not just the CLI).
+    // Switching stays keyboard-only (SUPER+1-0). Not a config bug to "fix"
+    // here; see memory hyprland-lua-dispatch-breaks-classic-syntax.
     "format": "{name}",
-    "sort-by-number": true
+    "sort-by": "number"
   },
 
 
