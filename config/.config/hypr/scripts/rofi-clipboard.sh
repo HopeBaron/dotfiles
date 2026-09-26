@@ -44,7 +44,7 @@ collect_rows() {
     pinned["$preview"]=1
 
     n=$((n + 1))
-    mark=" "; matches_current "$preview" && mark="*"
+    mark=" "; matches_current "$preview" && mark="●"
     printf 'pin%s%s%s%s %d  󰐃 %s\n' "$US" "$id" "$US" "$mark" "$n" "$preview"
   done < <(ls -t "$PIN_DIR"/*.txt 2>/dev/null || true)
 
@@ -55,7 +55,7 @@ collect_rows() {
     [[ -n "${pinned["$preview"]:-}" ]] && continue # Skip if already shown as a pin
 
     n=$((n + 1))
-    mark=" "; matches_current "$preview" && mark="*"
+    mark=" "; matches_current "$preview" && mark="●"
     printf 'hist%s%s%s%s %d  %s\n' "$US" "$line" "$US" "$mark" "$n" "$preview"
   done < <(cliphist list 2>/dev/null || true)
 }
