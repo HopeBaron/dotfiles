@@ -81,7 +81,7 @@ window#waybar {
 
 #language,
 #cpu, #memory, #pulseaudio, #network, #bluetooth,
-#custom-notification, #custom-power {
+#custom-caffeine, #custom-notification, #custom-power {
   padding: 0 8px;
   margin: 4px 0;
   background-color: transparent;
@@ -91,7 +91,8 @@ window#waybar {
 
 /* Hovering lifts a module to full contrast; nothing changes hue. */
 #language:hover, #cpu:hover, #memory:hover, #pulseaudio:hover,
-#network:hover, #bluetooth:hover, #custom-notification:hover {
+#network:hover, #bluetooth:hover, #custom-caffeine:hover,
+#custom-notification:hover {
   color: #${FG0};
 }
 
@@ -102,6 +103,9 @@ window#waybar {
 #bluetooth.connected        { color: #${BLUE}; }
 #bluetooth.disabled,
 #bluetooth.off              { color: #${GREY0}; }
+/* Same treatment as the active workspace pill -- an active keep-awake
+   toggle is a "this is on" state worth the primary accent. */
+#custom-caffeine.active      { color: #${GREEN}; }
 #custom-notification.notification { color: #${PURPLE}; }
 #custom-notification.dnd-none,
 #custom-notification.dnd-notification,

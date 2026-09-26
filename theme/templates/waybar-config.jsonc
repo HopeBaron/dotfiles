@@ -14,7 +14,7 @@
   "modules-left":   ["hyprland/workspaces"],
   "modules-center": ["clock", "tray"],
   "modules-right":  ["hyprland/language", "cpu", "memory", "pulseaudio", "network",
-                     "bluetooth", "custom/notification", "custom/power"],
+                     "bluetooth", "custom/caffeine", "custom/notification", "custom/power"],
 
   // Keyboard layout. Switched with SUPER+space (grp:win_space_toggle).
   "hyprland/language": {
@@ -104,6 +104,19 @@
     "on-click": "swaync-client -t -sw",
     "on-click-right": "swaync-client -d -sw",
     "escape": true
+  },
+
+  // Coffee-cup keep-awake toggle. Also bound to SUPER+SHIFT+`. "signal": 8
+  // matches caffeine.sh's `pkill -RTMIN+8 waybar`, so the icon updates the
+  // instant either trigger fires instead of waiting for the next interval.
+  "custom/caffeine": {
+    "format": "",
+    "tooltip": true,
+    "return-type": "json",
+    "exec": "$HOME/.config/hypr/scripts/caffeine.sh status",
+    "on-click": "$HOME/.config/hypr/scripts/caffeine.sh toggle",
+    "interval": 30,
+    "signal": 8
   },
 
   "tray": { "icon-size": 16, "spacing": 8 },

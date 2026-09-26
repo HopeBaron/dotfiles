@@ -364,6 +364,9 @@ hl.bind(mainMod .. " + N",      hl.dsp.exec_cmd("swaync-client -t -sw"), { descr
 -- grave is the X11 keysym name for the backtick/` key. Also reachable via
 -- the power menu.
 hl.bind(mainMod .. " + grave", hl.dsp.exec_cmd("hyprlock"), { description = "Lock screen" })
+-- Keep-awake toggle, backed by systemd-inhibit -- see caffeine.sh. Also
+-- clickable as the coffee-cup module on the waybar right island.
+hl.bind(mainMod .. " + SHIFT + grave", hl.dsp.exec_cmd(scripts .. "/caffeine.sh toggle"), { description = "Toggle keep-awake" })
 hl.bind("Print", hl.dsp.exec_cmd(scripts .. "/rofi-screenshot.sh"), { description = "Screenshot menu" })
 hl.bind(mainMod .. " + SHIFT + slash", hl.dsp.exec_cmd(scripts .. "/rofi-help.sh"), { description = "This cheat sheet" })
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo(), { description = "Pseudo-tile" })
