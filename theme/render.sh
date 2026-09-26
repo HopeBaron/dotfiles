@@ -31,4 +31,5 @@ render swaync-style.css  swaync/style.css
 render yazi-theme.toml   yazi/theme.toml
 render qt6ct-colors.conf qt6ct/colors/gruvbox-material.conf
 render_with_home qt6ct.conf qt6ct/qt6ct.conf
+render hyprlock.conf     hypr/hyprlock.conf
 echo "Done. Reload: hyprctl reload  /  kitty @ load-config"
