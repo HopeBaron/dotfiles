@@ -30,7 +30,7 @@ matches_current() {
 
 # Load and merge pinned clips and cliphist items into unified menu rows
 collect_rows() {
-  local n=0 file id preview line mark
+  local n=0 file id preview line mark icons
   local current
   # A non-text clipboard (e.g. an image) just never matches.
   current=$(wl-paste 2>/dev/null | tr -s '[:space:]' ' ' | sed 's/^ //' | head -c 200 || true)
@@ -44,8 +44,9 @@ collect_rows() {
     pinned["$preview"]=1
 
     n=$((n + 1))
-    mark=" "; matches_current "$preview" && mark="●"
-    printf 'pin%s%s%s%s 󰐃 %d  %s\n' "$US" "$id" "$US" "$mark" "$n" "$preview"
+    mark=""; matches_current "$preview" && mark="●"
+    icons="${mark:+$mark }󰐃" # pin icon always shown here; marker only when present
+    printf 'pin%s%s%s%s %d  %s\n' "$US" "$id" "$US" "$icons" "$n" "$preview"
   done < <(ls -t "$PIN_DIR"/*.txt 2>/dev/null || true)
 
   # 2. Collect Regular Clipboard History
@@ -55,8 +56,8 @@ collect_rows() {
     [[ -n "${pinned["$preview"]:-}" ]] && continue # Skip if already shown as a pin
 
     n=$((n + 1))
-    mark=" "; matches_current "$preview" && mark="●"
-    printf 'hist%s%s%s%s   %d  %s\n' "$US" "$line" "$US" "$mark" "$n" "$preview"
+    mark=""; matches_current "$preview" && mark="●"
+    printf 'hist%s%s%s%s %d  %s\n' "$US" "$line" "$US" "$mark" "$n" "$preview"
   done < <(cliphist list 2>/dev/null || true)
 }
 
