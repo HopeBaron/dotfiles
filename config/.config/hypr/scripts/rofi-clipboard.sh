@@ -45,7 +45,7 @@ collect_rows() {
 
     n=$((n + 1))
     mark=" "; matches_current "$preview" && mark="●"
-    printf 'pin%s%s%s%s %d  󰐃 %s\n' "$US" "$id" "$US" "$mark" "$n" "$preview"
+    printf 'pin%s%s%s%s 󰐃 %d  %s\n' "$US" "$id" "$US" "$mark" "$n" "$preview"
   done < <(ls -t "$PIN_DIR"/*.txt 2>/dev/null || true)
 
   # 2. Collect Regular Clipboard History
@@ -56,7 +56,7 @@ collect_rows() {
 
     n=$((n + 1))
     mark=" "; matches_current "$preview" && mark="●"
-    printf 'hist%s%s%s%s %d  %s\n' "$US" "$line" "$US" "$mark" "$n" "$preview"
+    printf 'hist%s%s%s%s   %d  %s\n' "$US" "$line" "$US" "$mark" "$n" "$preview"
   done < <(cliphist list 2>/dev/null || true)
 }
 
