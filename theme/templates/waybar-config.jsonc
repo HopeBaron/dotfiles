@@ -27,8 +27,12 @@
   },
 
   "hyprland/workspaces": {
+    // No "on-click" here on purpose: the module already switches workspace
+    // on click by default. Setting "on-click" to anything (including the
+    // "activate" string a lot of sample configs paste in) REPLACES that
+    // built-in behaviour with a literal shell command -- `activate` isn't a
+    // real command, so it silently did nothing on every click.
     "format": "{name}",
-    "on-click": "activate",
     "sort-by-number": true
   },
 
