@@ -85,6 +85,18 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -- generated from the same palette (theme/render.sh) as everything else.
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
 
+-- NVIDIA (proprietary driver, GTX 1660 Super) + wlroots hardware-cursor
+-- planes don't reliably release/reacquire across a VT switch -- reproduced
+-- as a full compositor freeze specifically when switching TTY away from an
+-- active hyprlock session. Forcing software cursor rendering removes that
+-- failure mode; this is Hyprland's own documented NVIDIA workaround, not a
+-- guess specific to this bug.
+hl.config({
+    cursor = {
+        no_hardware_cursors = true,
+    },
+})
+
 
 -----------------------
 ----- PERMISSIONS -----
