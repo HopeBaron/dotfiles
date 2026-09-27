@@ -1,0 +1,7 @@
+[SddmGreeterTheme]
+Name=Gruvbox Material
+Description=Login screen matching the hyprlock lock screen
+Type=sddm-theme
+MainScript=Main.qml
+ConfigFile=theme.conf
+QtVersion=6

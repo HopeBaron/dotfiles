@@ -4,8 +4,9 @@ Hyprland desktop, themed Gruvbox Material. Every binary referenced by any
 config is listed in `packages/`.
 
 Baseline is an **EndeavourOS** install — its installer already provides the base
-packages, the NVIDIA driver, the display manager and the audio/network services,
-so `install.sh` does not repeat any of that.
+packages, the NVIDIA driver and the audio/network services, so `install.sh` does
+not repeat any of that. It does replace the stock GDM with SDDM running a
+Gruvbox Material theme that mirrors the hyprlock lock screen.
 
 ## Install
 
@@ -15,7 +16,7 @@ cd ~/dotfiles
 ./install.sh
 ```
 
-Then log out and pick **Hyprland** at the display manager.
+Then reboot and pick **Hyprland (uwsm-managed)** at the SDDM login screen.
 
 On plain Arch rather than EndeavourOS:
 
@@ -33,12 +34,14 @@ modprobe, and regenerates the initramfs — reboot afterwards.
 ```
 install.sh              packages -> render -> stow
 packages/desktop.txt    Hyprland and its components (the default path)
+packages/fonts.txt      fonts the configs name, plus fallbacks
 packages/base.txt       plain-Arch extras, only with --bare-arch
 packages/nvidia.txt     driver stack, only with --nvidia
 theme/palette.sh        SINGLE SOURCE OF TRUTH for colour
 theme/templates/        per-app colour templates, ${VAR} placeholders
 theme/render.sh         templates + palette -> generated colour files
 config/                 stow package, mirrors ~/.config
+system/sddm/            login screen; copied (not stowed) into /usr/share + /etc
 ```
 
 ## Theming

@@ -13,7 +13,12 @@
  */
 
 * {
-  font-family: "JetBrainsMono Nerd Font", monospace;
+  /* Roboto for text; icons fall through to JetBrainsMono's Nerd Font glyphs.
+     Propo, not "Symbols Nerd Font": measured, the Symbols font sits every
+     icon ~0.8px below the text line, Propo centres them exactly. tnum
+     keeps digits fixed-width so the clock and percentages don't jitter. */
+  font-family: "Roboto", "JetBrainsMono Nerd Font Propo", sans-serif;
+  font-feature-settings: "tnum";
   font-size: 13px;
   border: none;
   border-radius: 0;
@@ -106,7 +111,9 @@ window#waybar {
 /* Same treatment as the active workspace pill -- an active keep-awake
    toggle is a "this is on" state worth the primary accent. */
 #custom-caffeine.active      { color: #a9b665; }
-#custom-notification.notification { color: #d3869b; }
+/* Unread notifications: the same primary accent as an active caffeine. */
+#custom-notification.notification,
+#custom-notification.inhibited-notification { color: #a9b665; }
 #custom-notification.dnd-none,
 #custom-notification.dnd-notification,
 #custom-notification.dnd-inhibited-none,

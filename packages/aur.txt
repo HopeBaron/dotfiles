@@ -1,0 +1,4 @@
+# AUR packages, installed with yay (EndeavourOS ships it). Kept separate so
+# pacman never sees a name it cannot resolve.
+
+gruvbox-plus-icon-theme     # app icons: rofi, notifications (GTK), Qt apps

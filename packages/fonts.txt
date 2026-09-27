@@ -1,0 +1,13 @@
+# Fonts the configs ask for by name, plus the fallbacks behind them. Only what
+# is used: the full nerd-fonts group is ~70 packages and none of the rest is
+# referenced anywhere.
+
+ttf-roboto                  # UI text: waybar, rofi, swaync, hyprlock, SDDM, Qt.
+                            # Not a Nerd Font -- there is no proportional Roboto
+                            # Nerd Font, only Roboto Mono.
+ttf-jetbrains-mono-nerd     # code: kitty, nvim, Qt's fixed font, the rofi
+                            # keybind sheet (its columns need monospace). Its
+                            # "Propo" variant is the icon font behind Roboto.
+noto-fonts                  # Noto Sans Arabic, chained behind Roboto by
+                            # config/.config/fontconfig; fallback for the rest
+noto-fonts-emoji            # colour emoji fallback

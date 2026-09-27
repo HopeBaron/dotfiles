@@ -28,7 +28,7 @@
 
     background-color: transparent;
     text-color:       @fg1;
-    font:             "JetBrainsMono Nerd Font 10";
+    font:             "Roboto, JetBrainsMono Nerd Font Propo 10";
 }
 
 window {
@@ -86,6 +86,8 @@ scrollbar {
 
 element {
     padding:       4px 8px;
+    border:        1px;
+    border-color:  transparent;   /* reserves the selection outline's 1px */
     border-radius: 5px;
     cursor:        pointer;
     text-color:    @fg1;
@@ -97,25 +99,26 @@ element normal active  { text-color: @orange; }
 
 element alternate normal { background-color: transparent; }
 
-/* Selection: a solid accent pill, same visual language as waybar's active
-   workspace indicator -- dark text on a full-strength fill, not an edge. */
+/* Selection: an accent outline + accent text on the normal background, not a
+   solid fill. Icons are images rofi cannot recolour, and the icon theme's
+   cream glyphs vanished on a solid green pill. */
 element selected {
-    background-color: @green;
-    text-color:       @bg0;
-    border-radius:    5px;
+    background-color: transparent;
+    border-color:     @green;
+    text-color:       @green;
 }
 
-element selected urgent { background-color: @red; }
-element selected active { background-color: @orange; }
+element selected urgent { border-color: @red;    text-color: @red; }
+element selected active { border-color: @orange; text-color: @orange; }
 
 element-text { background-color: inherit; text-color: inherit; vertical-align: 0.5; }
 element-icon { background-color: transparent; size: 16px; padding: 0 8px 0 0; }
 
-/* Fuzzy-match highlight: colour-as-accent on a normal row, since the row's
-   background is neutral there. On a selected row the background already IS
-   the accent, so colour can't do double duty -- underline carries it instead. */
+/* Fuzzy-match highlight: colour-as-accent on a normal row. On a selected row
+   the text already IS the accent, so colour can't do double duty -- underline
+   carries it instead. */
 element-text highlight                  { text-color: @green; }
-element selected element-text highlight { text-color: @bg0; underline: true; }
+element selected element-text highlight { text-color: @green; underline: true; }
 
 /* Footer: a quiet strip of key hints. Deliberately the lowest-contrast thing
    in the window -- it is reference, not content. */

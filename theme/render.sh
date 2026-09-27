@@ -21,6 +21,9 @@ render() { envsubst "$vars" < "$here/templates/$1" > "$repo/config/.config/$2"; 
 # is that machine's real $HOME, not a stray one shipped in from git.
 render_with_home() { envsubst "$vars \${HOME}" < "$here/templates/$1" > "$repo/config/.config/$2"; echo "  rendered $2"; }
 
+# For files that are not under ~/.config (system/ is copied into / by install.sh).
+render_repo() { envsubst "$vars" < "$here/templates/$1" > "$repo/$2"; echo "  rendered $2"; }
+
 echo "Rendering Gruvbox Material (dark/medium/material):"
 render hypr-colors.lua   hypr/colors.lua
 render kitty-colors.conf kitty/colors.conf
@@ -32,4 +35,5 @@ render yazi-theme.toml   yazi/theme.toml
 render qt6ct-colors.conf qt6ct/colors/gruvbox-material.conf
 render_with_home qt6ct.conf qt6ct/qt6ct.conf
 render hyprlock.conf     hypr/hyprlock.conf
+render_repo sddm-theme.conf system/sddm/theme/theme.conf
 echo "Done. Reload: hyprctl reload  /  kitty @ load-config"

@@ -44,6 +44,7 @@ printf '%s\n%s\n' "$binds" "$EXTRAS" \
   | awk -F'\t' '{ printf "%-26s %s\n", $1, $2 }' \
   | rofi -dmenu -i -p "Shortcuts" \
       -mesg '<b>Type to filter</b>   <b>Esc</b> close' \
-      -theme-str 'window { width: 640px; }
+      -theme-str '* { font: "JetBrainsMono Nerd Font 10"; }
+                  window { width: 640px; }
                   listview { lines: 16; scrollbar: true; }' \
   > /dev/null || true   # reference only: nothing is actionable

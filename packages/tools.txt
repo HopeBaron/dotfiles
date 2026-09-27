@@ -19,9 +19,3 @@ git                         # lazy.nvim clones plugins with it
 ripgrep                     # telescope's live_grep
 fd                          # telescope's file-finding (faster than default find)
 base-devel                  # make+gcc, needed to build telescope-fzf-native's C extension
-
-# fonts -- kitty.conf asks for JetBrainsMono Nerd Font by name, and the
-# waybar/rofi menus are full of Nerd Font glyphs that render as tofu without it.
-ttf-jetbrains-mono-nerd
-noto-fonts
-noto-fonts-emoji
