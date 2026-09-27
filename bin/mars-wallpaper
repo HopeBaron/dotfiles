@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# Set the desktop wallpaper: applies it live through hyprpaper and saves it
+# for the next login.
+#
+#   mars-wallpaper list            wallpapers in the repo's wallpapers/ dir
+#   mars-wallpaper current         path of the saved wallpaper
+#   mars-wallpaper set <name|path> a file in wallpapers/, or any image path
+#
+# The choice lives in ~/.local/state/mars/wallpaper.conf, which
+# config/.config/hypr/hyprpaper.conf sources -- so switching never edits a
+# tracked file.
+set -euo pipefail
+
+# shellcheck source=../lib/mars.sh
+. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/mars.sh"
+
+readonly STATE_FILE="$MARS_STATE_DIR/wallpaper.conf"
+readonly IMAGE_PATTERN='.*\.(jpe?g|png|webp)$'
+
+usage() {
+  sed -n '2,/^[^#]/{/^#/p}' "$0" | sed 's/^# \{0,1\}//'
+  exit "${1:-0}"
+}
+
+cmd_list() {
+  find "$MARS_WALLPAPER_DIR" -maxdepth 1 -type f -regextype posix-extended -iregex "$IMAGE_PATTERN" -printf '%f\n' | sort
+}
+
+cmd_current() {
+  [[ -r "$STATE_FILE" ]] || return 0
+  sed -n 's/^[[:space:]]*path[[:space:]]*=[[:space:]]*//p' "$STATE_FILE" | head -n1
+}
+
+# name in wallpapers/, or an existing path -> absolute path
+resolve() {
+  if [[ -f "$MARS_WALLPAPER_DIR/$1" ]]; then
+    echo "$MARS_WALLPAPER_DIR/$1"
+  elif [[ -f "$1" ]]; then
+    readlink -f "$1"
+  else
+    echo "no such wallpaper: $1 (see: mars-wallpaper list)" >&2
+    return 1
+  fi
+}
+
+save() {
+  mkdir -p "$MARS_STATE_DIR"
+  cat > "$STATE_FILE" <<CONF
+# Written by mars-wallpaper; sourced by ~/.config/hypr/hyprpaper.conf.
+wallpaper {
+    monitor =
+    path = $1
+    fit_mode = cover
+}
+CONF
+}
+
+cmd_set() {
+  local path
+  path=$(resolve "${1:?usage: mars-wallpaper set <name|path>}")
+  save "$path"
+  if pgrep -x hyprpaper >/dev/null; then
+    hyprctl hyprpaper wallpaper ",$path,cover" >/dev/null
+  fi
+  echo "Wallpaper: $path"
+}
+
+case "${1:-}" in
+  list)    cmd_list ;;
+  current) cmd_current ;;
+  set)     cmd_set "${2:-}" ;;
+  -h|--help|help) usage ;;
+  *) usage 2 ;;
+esac

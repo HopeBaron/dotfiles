@@ -5,7 +5,6 @@
 configuration {
     modes:                 "drun,run,window";
     show-icons:            true;
-    icon-theme:            "Gruvbox-Plus-Dark";
     drun-display-format:   "{name}";
     display-drun:          "Apps";
     display-window:        "Windows";

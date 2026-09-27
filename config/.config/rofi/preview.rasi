@@ -1,0 +1,71 @@
+/* rofi layout for menus that preview images: the wallpaper picker and the
+ * clipboard. Hand-written; colours come from the rendered main theme, this
+ * only rearranges it.
+ *
+ *   rows     index, then icon (if the row has one), then text -- the row
+ *            number comes first, like the window switcher's "1  ● class"
+ *            rows.
+ *   right    a large copy of the highlighted row's icon, if it has one
+ *            (rofi's own icon-current-entry). A row with no icon (clipboard
+ *            text) leaves it empty -- explicit `width`, not just `size`,
+ *            keeps the pane itself from collapsing to nothing in that case,
+ *            so the border-left still reads as "there is a preview column
+ *            here", just with nothing to show right now. Background stays
+ *            transparent so an empty pane doesn't paint a visible block.
+ *
+ * Used as:  rofi -dmenu -theme preview ...
+ */
+@import "gruvbox-material"
+
+/* The list stays compact (small per-row icon, ~650px worth of list); the
+ * preview column is full-size, so the window is wider than a plain list
+ * menu to fit both. */
+window {
+    width: 900px;
+}
+
+mainbox {
+    children: [ inputbar, body, message ];
+}
+
+body {
+    orientation: horizontal;
+    spacing:     6px;
+    children:    [ listview, icon-current-entry ];
+}
+
+listview {
+    lines: 10;
+}
+
+element {
+    children: [ element-index, element-icon, element-text ];
+}
+
+element-index {
+    expand:           false;
+    width:            1.6em;
+    horizontal-align: 1;
+    padding:          0 6px 0 0;
+    text-color:       @grey1;
+    background-color: transparent;
+    vertical-align:   0.5;
+}
+
+element selected element-index {
+    text-color: @accent;
+}
+
+element-icon {
+    size:    20px;
+    padding: 0 8px 0 0;
+}
+
+icon-current-entry {
+    expand:           false;
+    width:            340px;   /* keeps the column even with no icon to show */
+    size:             340px;
+    background-color: transparent;
+    border:           0px 0px 0px 1px;
+    border-color:     @bg3;
+}
