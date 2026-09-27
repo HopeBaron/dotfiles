@@ -31,21 +31,19 @@ done
 
 FOOTER='<b>Enter</b> save + copy   <b>Alt+c</b> copy only'
 
-# rofi exits non-zero for Escape (1) and for each -kb-custom-N (10 + N - 1),
-# so the call must not trip `set -e`.
-set +e
 # rofi single-instances itself through a pidfile lock, so with a menu already
 # open a second one dies with "Rofi already running?" and Print looks dead.
 # Its own pidfile lets this menu open on top of another rofi -- which is the
 # point, since that other menu is usually what you are trying to capture.
 pidfile="${XDG_RUNTIME_DIR:-/tmp}/rofi-screenshot.pid"
 
+# rofi exits non-zero for Escape (1) and for each -kb-custom-N (10 + N - 1);
+# `|| rc=$?` records that instead of letting `set -e` end the script.
+rc=0
 choice=$(printf '%s\n' "${labels[@]}" | rofi -dmenu -i -p "Screenshot" \
   -pid "$pidfile" \
   -selected-row "$selected" -mesg "$FOOTER" \
-  -theme-str 'window { width: 360px; } listview { lines: 3; }')
-rc=$?
-set -e
+  -theme-str 'window { width: 360px; } listview { lines: 3; }') || rc=$?
 
 [ -n "${choice:-}" ] || exit 0
 

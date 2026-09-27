@@ -57,13 +57,11 @@ while :; do
     list=$(printf '%s\n' "${rows[@]}" | cut -f2-)
   fi
 
-  # rofi exits non-zero for Escape (1) and for -kb-custom-5 (14 = 10+5-1), so
-  # the call must not trip `set -e`.
-  set +e
+  # rofi exits non-zero for Escape (1) and for -kb-custom-5 (14 = 10+5-1);
+  # `|| rc=$?` records that instead of letting `set -e` end the script.
+  rc=0
   choice=$(printf '%s\n' "$list" \
-    | rofi -dmenu -i -p "$prompt" -mesg "<b>Enter</b> focus   <b>Alt+a</b> $hint")
-  rc=$?
-  set -e
+    | rofi -dmenu -i -p "$prompt" -mesg "<b>Enter</b> focus   <b>Alt+a</b> $hint") || rc=$?
 
   if [ "$rc" -eq 14 ]; then
     [ "$scope" = workspace ] && scope=global || scope=workspace

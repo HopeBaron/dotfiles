@@ -1,192 +1,231 @@
 #!/usr/bin/env bash
-# Clipboard history with pins using cliphist, wl-clipboard, and rofi.
-
+# Clipboard history (SUPER+SHIFT+V): cliphist + pins, in rofi. An image entry
+# gets a thumbnail, shown small in the list and enlarged in the preview pane
+# when highlighted; a text entry has neither -- the pane just stays empty.
+#
+#   Enter  copy        Alt+p  pin / unpin
+#   Alt+d  delete      Alt+w  wipe history (pins are kept)
+#
+# Pins are copies kept outside cliphist ($PIN_DIR), so they survive a wipe:
+# <id>.bin (payload), <id>.mime, <id>.txt (the preview line shown in the menu).
 set -euo pipefail
+# shellcheck source=../../../../lib/mars.sh
+. "$(dirname "$(readlink -f "$0")")/../../../../lib/mars.sh"
+# shellcheck source=../../../../theme/lib.sh
+. "$MARS_REPO/theme/lib.sh"
 
-# Configuration & Constants
-readonly US=$'\x1f' # Field separator (Unit Separator ASCII 0x1F)
 readonly PIN_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/cliphist/pins"
+readonly IMAGE_CACHE="$MARS_CACHE_DIR/clipboard"
+readonly SEP=$'\x1f'   # field separator inside a row (ASCII unit separator)
 readonly FOOTER='<b>Enter</b> copy   <b>Alt+p</b> pin/unpin   <b>Alt+d</b> delete   <b>Alt+w</b> wipe'
+readonly PIN_ICON=$'\U000f0403'   # nf-md-pin, shown inline before a pinned entry's text
 
-mkdir -p "$PIN_DIR"
+# rofi exit codes: 0 Enter, 1 Esc, 10+N for -kb-custom-(N+1).
+readonly KEY_PIN=10 KEY_DELETE=11 KEY_WIPE=12
 
-# Desktop Notification Helper
-note() {
-  if command -v notify-send >/dev/null 2>&1; then
-    notify-send -a clipboard "$1" "${2:-}"
-  fi
+mkdir -p "$PIN_DIR" "$IMAGE_CACHE"
+
+# ---- the "currently on the clipboard" marker ---------------------------------
+
+# The live clipboard, normalized the way cliphist normalizes its previews
+# (whitespace runs -> one space, leading space dropped). Empty for images.
+current_clipboard() {
+  wl-paste --no-newline 2>/dev/null | tr -s '[:space:]' ' ' | sed 's/^ //' | head -c 200 || true
 }
 
-# True when a row's (possibly cliphist-truncated, "…"-suffixed) preview is a
-# prefix of the current clipboard, normalized the same way cliphist itself
-# does (whitespace/newlines collapsed to single spaces, leading one trimmed).
-# A straight equality check doesn't work: cliphist's own preview is cut much
-# shorter than our 200-char truncation and ends in "…", so it never equals
-# the fuller string outright.
-matches_current() {
+# cliphist cuts previews short and ends them in "…", so a row is current when
+# its preview (minus the "…") is a prefix of the clipboard, not when equal.
+is_current() {
   local preview=$1
-  [[ -n "$current" && "$current" == "${preview%…}"* ]]
+  [[ -n "$CURRENT" && "$CURRENT" == "${preview%…}"* ]]
 }
 
-# Load and merge pinned clips and cliphist items into unified menu rows
-collect_rows() {
-  local n=0 file id preview line mark icons
-  local current
-  # A non-text clipboard (e.g. an image) just never matches.
-  current=$(wl-paste 2>/dev/null | tr -s '[:space:]' ' ' | sed 's/^ //' | head -c 200 || true)
-  declare -A pinned=()
+# ---- image previews ------------------------------------------------------------
 
-  # 1. Collect Pinned Clips (Processed first to avoid duplicates)
+is_image_preview() { [[ "$1" == "[[ binary data "*" ]]" ]]; }
+
+# Decodes a cliphist image entry once, returns a thumbnail path for rofi.
+history_image() {
+  local line=$1 id=${1%%$'\t'*}
+  local file="$IMAGE_CACHE/$id"
+  [[ -s "$file" ]] || printf '%s' "$line" | cliphist decode > "$file" 2>/dev/null || return 1
+  thumbnail "$file"
+}
+
+pin_image() {
+  local id=$1
+  [[ "$(cat "$PIN_DIR/$id.mime" 2>/dev/null)" == image/* ]] || return 1
+  thumbnail "$PIN_DIR/$id.bin"
+}
+
+# Cached decodes for entries no longer in history.
+prune_image_cache() {
+  local file id
+  for file in "$IMAGE_CACHE"/*; do
+    [[ -e "$file" ]] || continue
+    id=${file##*/}
+    [[ -n "${LISTED_IDS[$id]:-}" ]] || rm -f "$file" "$(thumbnail_path "$file")"
+  done
+}
+
+# ---- building the menu -------------------------------------------------------
+
+# "● 󰐃 text": the ● "on the clipboard now" marker, then a pin glyph for a
+# pinned entry, then the preview. The row number and the thumbnail/placeholder
+# are separate rofi widgets (element-index, element-icon in preview.rasi) --
+# rofi lays those out before this text, so they are not part of the label.
+label() {
+  local preview=$1 pinned=$2 mark="  "
+  is_current "$preview" && mark="● "
+  printf '%s%s%s' "$mark" "${pinned:+$PIN_ICON }" "$preview"
+}
+
+# One row per entry: kind <SEP> key <SEP> label <SEP> icon-path
+#   kind  pin | hist      key  pin id | the full `cliphist list` line
+#   icon  always set: a real thumbnail for an image, the placeholder for text
+collect_rows() {
+  local file id preview line icon
+  declare -A pinned_previews=()
+  declare -gA LISTED_IDS=()
+
   while IFS= read -r file; do
     [[ -n "$file" ]] || continue
     id=$(basename "$file" .txt)
     preview=$(head -c 200 "$file")
-    pinned["$preview"]=1
-
-    n=$((n + 1))
-    mark=""; matches_current "$preview" && mark="●"
-    icons="${mark:+$mark }󰐃" # pin icon always shown here; marker only when present
-    printf 'pin%s%s%s%s %d  %s\n' "$US" "$id" "$US" "$icons" "$n" "$preview"
+    pinned_previews["$preview"]=1
+    icon=$(pin_image "$id") || icon=""   # text: no icon -- the pane stays empty for it
+    printf 'pin%s%s%s%s%s%s\n' "$SEP" "$id" "$SEP" "$(label "$preview" 1)" "$SEP" "$icon"
   done < <(ls -t "$PIN_DIR"/*.txt 2>/dev/null || true)
 
-  # 2. Collect Regular Clipboard History
   while IFS= read -r line; do
     [[ -n "$line" ]] || continue
-    preview=${line#*	} # Strip cliphist ID before tab
-    [[ -n "${pinned["$preview"]:-}" ]] && continue # Skip if already shown as a pin
-
-    n=$((n + 1))
-    mark=""; matches_current "$preview" && mark="●"
-    printf 'hist%s%s%s%s %d  %s\n' "$US" "$line" "$US" "$mark" "$n" "$preview"
+    preview=${line#*$'\t'}
+    [[ -n "${pinned_previews["$preview"]:-}" ]] && continue   # already listed as a pin
+    icon=""   # text: no icon -- the pane stays empty for it
+    if is_image_preview "$preview"; then
+      LISTED_IDS[${line%%$'\t'*}]=1
+      icon=$(history_image "$line") || icon=""
+    fi
+    printf 'hist%s%s%s%s%s%s\n' "$SEP" "$line" "$SEP" "$(label "$preview" "")" "$SEP" "$icon"
   done < <(cliphist list 2>/dev/null || true)
+
+  # Here, not in main: this function runs in a $(...) subshell, so
+  # LISTED_IDS only exists inside it.
+  prune_image_cache
 }
 
-# Fetch raw payload bytes
-payload_of() {
+# rofi input: the label, plus its icon (an image entry's thumbnail; empty
+# for text) as the row's element-icon, enlarged in the preview pane when
+# that row is highlighted.
+menu_lines() {
+  local kind key label icon
+  while IFS="$SEP" read -r kind key label icon; do
+    if [[ -n "$icon" ]]; then printf '%s\0icon\x1f%s\n' "$label" "$icon"
+    else                      printf '%s\n' "$label"
+    fi
+  done
+}
+
+# ---- actions -----------------------------------------------------------------
+
+payload() {
   local kind=$1 key=$2
-  if [[ "$kind" == "pin" ]]; then
-    cat "$PIN_DIR/$key.bin"
-  else
-    printf '%s' "$key" | cliphist decode
+  if [[ "$kind" == pin ]]; then cat "$PIN_DIR/$key.bin"
+  else printf '%s' "$key" | cliphist decode
   fi
 }
 
-# Copy entry to clipboard
 copy_entry() {
-  local kind=$1 key=$2 mime="text/plain"
-  if [[ "$kind" == "pin" && -r "$PIN_DIR/$key.mime" ]]; then
-    mime=$(cat "$PIN_DIR/$key.mime")
-  fi
-  payload_of "$kind" "$key" | wl-copy --type "$mime"
+  local kind=$1 key=$2 mime=text/plain
+  [[ "$kind" == pin && -r "$PIN_DIR/$key.mime" ]] && mime=$(cat "$PIN_DIR/$key.mime")
+  payload "$kind" "$key" | wl-copy --type "$mime"
 }
 
-# Unpin item and preserve in history if missing
 unpin() {
-  local key=$1 preview
-  preview=$(cat "$PIN_DIR/$key.txt" 2>/dev/null || true)
-  
+  local id=$1 preview
+  preview=$(cat "$PIN_DIR/$id.txt" 2>/dev/null || true)
+  # Put it back into history if it has since dropped out, so unpinning never
+  # loses the item.
   if [[ -n "$preview" ]] && ! cliphist list | grep -qF -- "$preview"; then
-    cliphist store < "$PIN_DIR/$key.bin"
+    cliphist store < "$PIN_DIR/$id.bin"
   fi
-  
-  rm -f "$PIN_DIR/$key".{bin,mime,txt}
-  note "Unpinned" "Kept in history"
+  rm -f "$PIN_DIR/$id".{bin,mime,txt}
+  notify clipboard "Unpinned" "Kept in history"
 }
 
-# Toggle pin status
-toggle_pin() {
-  local kind=$1 key=$2 tmp id
-  if [[ "$kind" == "pin" ]]; then
-    unpin "$key"
-    return
-  fi
-
+pin() {
+  local line=$1 tmp id
   tmp=$(mktemp)
-  trap 'rm -f "$tmp"' RETURN
-  
-  payload_of "$kind" "$key" > "$tmp"
+  payload hist "$line" > "$tmp"
   id=$(sha256sum "$tmp" | cut -c1-12)
-
   if [[ -e "$PIN_DIR/$id.bin" ]]; then
-    note "Already pinned"
+    rm -f "$tmp"
+    notify clipboard "Already pinned"
     return
   fi
-
-  cp "$tmp" "$PIN_DIR/$id.bin"
-  file -b --mime-type "$tmp" > "$PIN_DIR/$id.mime"
-  printf '%s' "${key#*	}" > "$PIN_DIR/$id.txt"
-  note "Pinned"
+  mv "$tmp" "$PIN_DIR/$id.bin"
+  file -b --mime-type "$PIN_DIR/$id.bin" > "$PIN_DIR/$id.mime"
+  printf '%s' "${line#*$'\t'}" > "$PIN_DIR/$id.txt"
+  notify clipboard "Pinned"
 }
 
-# Remove pin or standard history item
+toggle_pin() {
+  if [[ "$1" == pin ]]; then unpin "$2"; else pin "$2"; fi
+}
+
 delete_entry() {
   local kind=$1 key=$2 preview
-  if [[ "$kind" == "pin" ]]; then
+  if [[ "$kind" == pin ]]; then
     preview=$(cat "$PIN_DIR/$key.txt" 2>/dev/null || true)
     rm -f "$PIN_DIR/$key".{bin,mime,txt}
-    if [[ -n "$preview" ]]; then
-      cliphist list | grep -F -- "$preview" | cliphist delete 2>/dev/null || true
-    fi
+    [[ -n "$preview" ]] && { cliphist list | grep -F -- "$preview" | cliphist delete 2>/dev/null || true; }
   else
     printf '%s' "$key" | cliphist delete
   fi
-  note "Deleted"
+  notify clipboard "Deleted"
 }
 
-# Wipe history with confirmation dialog
 wipe_history() {
-  local ans
-  ans=$(printf 'No, keep it\nYes, wipe history\n' \
-        | rofi -dmenu -i -p "Wipe history?" -mesg "Pins are kept" \
-               -theme-str 'window { width: 360px; } listview { lines: 2; }') || return 0
-  
-  if [[ "$ans" == "Yes, wipe history" ]]; then
+  local answer
+  answer=$(printf 'No, keep it\nYes, wipe history\n' |
+    rofi -dmenu -i -mesg "Wipe clipboard history? Pins are kept" \
+         -theme-str 'window { width: 360px; } listview { lines: 2; }') || return 0
+  if [[ "$answer" == "Yes, wipe history" ]]; then
     cliphist wipe
-    note "History wiped" "Pins kept"
+    local file
+    for file in "$IMAGE_CACHE"/*; do rm -f "$file" "$(thumbnail_path "$file")"; done
+    notify clipboard "History wiped" "Pins kept"
   fi
 }
 
-# Main Interactive Loop
-main() {
-  local rows choice rc row kind key
+# ---- main loop: the menu re-opens after pin/delete so you can keep going -----
 
+main() {
+  local rows index rc row kind key
   while true; do
+    CURRENT=$(current_clipboard)
     rows=$(collect_rows)
     if [[ -z "$rows" ]]; then
-      note "Clipboard is empty"
+      notify clipboard "Clipboard is empty"
       exit 0
     fi
 
-    # Render Rofi launcher with custom keybindings attached
-    set +e
-    choice=$(printf '%s\n' "$rows" \
-             | cut -d"$US" -f3 \
-             | rofi -dmenu -i -p "Clipboard" -mesg "$FOOTER" \
-                    -kb-custom-1 "Alt+p" \
-                    -kb-custom-2 "Alt+d" \
-                    -kb-custom-3 "Alt+w" \
-                    -theme-str 'window { width: 650px; } listview { lines: 10; }')
-    rc=$?
-    set -e
+    rc=0
+    index=$(printf '%s\n' "$rows" | menu_lines |
+      rofi -dmenu -i -format i -theme preview -mesg "$FOOTER" \
+           -kb-custom-1 "Alt+p" -kb-custom-2 "Alt+d" -kb-custom-3 "Alt+w") || rc=$?
 
-    # Exit if escape pressed or menu closed
-    [[ -z "${choice:-}" ]] && exit 0
+    if (( rc == KEY_WIPE )); then wipe_history; continue; fi
+    [[ -n "$index" ]] || exit 0   # Esc
 
-    # Extract matching row data using native Bash parsing
-    row=$(printf '%s\n' "$rows" | grep -F "$US$choice" | head -n1)
-    [[ -z "$row" ]] && exit 0
+    row=$(printf '%s\n' "$rows" | sed -n "$((index + 1))p")
+    IFS="$SEP" read -r kind key _ _ <<<"$row"
 
-    kind="${row%%"$US"*}"
-    key="${row#*"$US"}"
-    key="${key%%"$US"*}"
-
-    # Action routing based on Rofi exit status code
     case "$rc" in
-      0)  copy_entry "$kind" "$key"; exit 0 ;; # Enter
-      10) toggle_pin "$kind" "$key" ;;         # Alt+p
-      11) delete_entry "$kind" "$key" ;;       # Alt+d
-      12) wipe_history ;;                      # Alt+w
-      *)  exit 0 ;;
+      0)             copy_entry "$kind" "$key"; exit 0 ;;
+      "$KEY_PIN")    toggle_pin "$kind" "$key" ;;
+      "$KEY_DELETE") delete_entry "$kind" "$key" ;;
+      *)             exit 0 ;;
     esac
   done
 }
