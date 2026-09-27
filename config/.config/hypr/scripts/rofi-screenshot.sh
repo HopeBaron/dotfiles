@@ -43,6 +43,7 @@ rc=0
 choice=$(printf '%s\n' "${labels[@]}" | rofi -dmenu -i -p "Screenshot" \
   -pid "$pidfile" \
   -selected-row "$selected" -mesg "$FOOTER" \
+  -kb-custom-4 "Alt+c" \
   -theme-str 'window { width: 360px; } listview { lines: 3; }') || rc=$?
 
 [ -n "${choice:-}" ] || exit 0

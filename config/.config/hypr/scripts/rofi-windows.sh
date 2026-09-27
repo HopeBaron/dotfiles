@@ -61,7 +61,8 @@ while :; do
   # `|| rc=$?` records that instead of letting `set -e` end the script.
   rc=0
   choice=$(printf '%s\n' "$list" \
-    | rofi -dmenu -i -p "$prompt" -mesg "<b>Enter</b> focus   <b>Alt+a</b> $hint") || rc=$?
+    | rofi -dmenu -i -p "$prompt" -mesg "<b>Enter</b> focus   <b>Alt+a</b> $hint" \
+           -kb-custom-5 "Alt+a") || rc=$?
 
   if [ "$rc" -eq 14 ]; then
     [ "$scope" = workspace ] && scope=global || scope=workspace

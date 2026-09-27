@@ -1,15 +1,22 @@
 #!/usr/bin/env bash
 # Switch the desktop's colour theme and accent, and apply it everywhere.
 #
-#   mars-theme list                 theme ids, one per line ("id<TAB>label")
-#   mars-theme current              the saved theme and accent
-#   mars-theme set <theme-id>       switch theme (accent is kept)
-#   mars-theme accent <name|#hex>   switch accent: red orange yellow green
-#                                   aqua blue purple, or any #rrggbb
-#   mars-theme apply                re-render the saved choice and push it
-#                                   into running apps (install.sh uses this)
+#   mars-theme list                     theme ids, one per line ("id<TAB>label")
+#   mars-theme current                  the saved theme and accent
+#   mars-theme set <theme-id>           switch theme
+#   mars-theme accent <name|#hex|reset> [theme-id ...]
+#                                        set (or reset to default) the accent of
+#                                        the given themes, or the current one if
+#                                        none given -- name is red orange yellow
+#                                        green aqua blue purple, or any #rrggbb
+#   mars-theme apply                    re-render the saved choice and push it
+#                                        into running apps (install.sh uses this)
 #
-# Choice is saved in ~/.local/state/mars/theme.env; see theme/lib.sh.
+# Current choice is saved in ~/.local/state/mars/theme.env. A theme you have
+# explicitly given its own accent (or mars-wallpaper its own wallpaper)
+# remembers it from then on in ~/.local/state/mars/themes/<id>.env -- switching
+# to it always restores that accent/wallpaper. An untouched theme has no such
+# file and just carries forward whatever is already active. See theme/lib.sh.
 set -euo pipefail
 
 REPO=$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)
@@ -107,22 +114,66 @@ cmd_current() {
 cmd_set() {
   local id=${1:?usage: mars-theme set <theme-id>}
   theme_exists "$id" || { echo "unknown theme: $id (see: mars-theme list)" >&2; exit 1; }
-  state_load
-  state_save "$id" "$ACCENT_SPEC"
+
+  state_load   # ACCENT_SPEC here is the outgoing theme's accent -- the
+               # carry-forward value if $id has never been given its own
+
+  local accent
+  accent=$(theme_get_accent "$id")
+  [[ -n "$accent" ]] || accent=$ACCENT_SPEC
+
+  state_save "$id" "$accent"
   apply
+
+  # A wallpaper override applies on top of whatever apply() already did (or
+  # didn't) for the wallpaper; with none, this theme just keeps whatever is
+  # currently showing.
+  local wallpaper
+  wallpaper=$(theme_get_wallpaper "$id")
+  [[ -n "$wallpaper" ]] && "$REPO/bin/mars-wallpaper" apply "$wallpaper" >/dev/null 2>&1
+
   notify "Theme: $(theme_label "$id")" "Restart open Qt/KDE and GTK4 apps to pick it up everywhere"
 }
 
+# Sets (or resets) the accent for one or more themes. With no theme-id, only
+# the current theme is affected -- the ordinary single-theme case. The
+# current live accent only changes if the current theme is among the targets.
 cmd_accent() {
-  local spec
-  spec=$(accent_normalize "${1:?usage: mars-theme accent <name|#rrggbb>}") || {
-    echo "not an accent: $1 (use ${MARS_ACCENT_NAMES[*]} or #rrggbb)" >&2
-    exit 1
-  }
-  state_load
-  state_save "$THEME" "$spec"
-  apply
-  notify "Accent: $spec"
+  local spec_arg=${1:?usage: mars-theme accent <name|#rrggbb|reset> [theme-id ...]}
+  shift
+  local targets=("$@") id
+
+  state_load   # THEME = current theme, for the "is it among the targets?" check
+  (( ${#targets[@]} == 0 )) && targets=("$THEME")
+
+  local spec applied=0
+  if [[ "$spec_arg" == reset ]]; then
+    for id in "${targets[@]}"; do theme_reset_accent "$id"; done
+    spec=$MARS_DEFAULT_ACCENT
+  else
+    spec=$(accent_normalize "$spec_arg") || {
+      echo "not an accent: $spec_arg (use ${MARS_ACCENT_NAMES[*]}, #rrggbb, or reset)" >&2
+      exit 1
+    }
+    for id in "${targets[@]}"; do theme_set_accent "$id" "$spec"; done
+  fi
+
+  for id in "${targets[@]}"; do
+    if [[ "$id" == "$THEME" ]]; then
+      state_save "$THEME" "$spec"
+      apply
+      applied=1
+      break
+    fi
+  done
+
+  if (( ${#targets[@]} > 1 )); then
+    notify "Accent: $spec" "Applied to ${#targets[@]} themes"
+  elif (( applied )); then
+    notify "Accent: $spec"
+  else
+    notify "Accent: $spec" "Saved for ${targets[0]}; switch to it to see it"
+  fi
 }
 
 main() {
@@ -130,7 +181,7 @@ main() {
     list)    cmd_list ;;
     current) cmd_current ;;
     set)     cmd_set "${2:-}" ;;
-    accent)  cmd_accent "${2:-}" ;;
+    accent)  cmd_accent "${@:2}" ;;
     apply)   apply ;;
     -h|--help|help) usage ;;
     *) usage 2 ;;

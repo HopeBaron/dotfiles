@@ -4,19 +4,28 @@
 # menus, so there is exactly one definition of each of these.
 #
 # Vocabulary
-#   theme   a complete palette plus a mode (dark|light). Either a hand-kept
-#           file in theme/themes/<id>.sh (e.g. gruvmoon) or a computed
-#           Gruvbox Material variant, id gruvbox-material-<mode>-<bg>-<fg>.
-#   accent  the one highlight colour (selection, focus, active tab...). A
-#           palette colour name, resolved per theme so it stays in key on
-#           light themes, or a fixed custom hex.
-#   state   the saved choice of theme + accent, in $MARS_STATE_FILE.
+#   theme     a complete palette plus a mode (dark|light). Either a hand-kept
+#             file in theme/themes/<id>.sh (e.g. gruvmoon) or a computed
+#             Gruvbox Material variant, id gruvbox-material-<mode>-<bg>-<fg>.
+#   accent    the one highlight colour (selection, focus, active tab...). A
+#             palette colour name, resolved per theme so it stays in key on
+#             light themes, or a fixed custom hex.
+#   state     the current choice of theme + accent, in $MARS_STATE_FILE.
+#             Never touches the theme *definitions* above -- those are repo
+#             files; state is which one, and which accent, is picked right now.
+#   override  a specific theme's OWN remembered accent and/or wallpaper, in
+#             $MARS_OVERRIDE_DIR/<id>.env. Absent = that theme has never been
+#             customized, so it just carries forward whatever the current
+#             accent/wallpaper already is when you switch to it. Present =
+#             switching to that theme re-applies its own remembered choice.
+#             Also never touches the theme definitions -- same reason.
 
 # shellcheck source=../lib/mars.sh
 . "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/mars.sh"   # MARS_REPO, MARS_STATE_DIR
 
 MARS_THEME_DIR="$MARS_REPO/theme"
 MARS_STATE_FILE="$MARS_STATE_DIR/theme.env"
+MARS_OVERRIDE_DIR="$MARS_STATE_DIR/themes"
 
 readonly MARS_DEFAULT_THEME=gruvmoon
 readonly MARS_DEFAULT_ACCENT=green
@@ -175,6 +184,56 @@ theme_derive() {
     export SHADOW=$FG1
   fi
 }
+
+# ---- per-theme overrides ------------------------------------------------------
+#
+# One small file per customized theme, $MARS_OVERRIDE_DIR/<id>.env, holding
+# whichever of ACCENT= / WALLPAPER= that theme has been explicitly given. A
+# theme with neither is not customized and has no file at all -- theme_list
+# still lists it normally, it just carries forward whatever is already active.
+
+_override_file() { echo "$MARS_OVERRIDE_DIR/$1.env"; }
+
+# The value of KEY in theme <id>'s override file, or empty if unset/absent.
+_override_get() {
+  local id=$1 key=$2 file
+  file=$(_override_file "$id")
+  [[ -r "$file" ]] || return 0
+  sed -n "s/^$key=//p" "$file" | tail -n1
+}
+
+# Sets KEY=VALUE in theme <id>'s override file, preserving its other key.
+_override_set() {
+  local id=$1 key=$2 value=$3 file tmp
+  file=$(_override_file "$id")
+  mkdir -p "$MARS_OVERRIDE_DIR"
+  tmp=$(mktemp)
+  # grep -v exits 1 (not an error here) when the file's only line matched --
+  # e.g. replacing a theme's only-ever-set key -- which would otherwise kill
+  # the whole script under `set -e`.
+  [[ -f "$file" ]] && { grep -v "^$key=" "$file" > "$tmp" || true; }
+  printf '%s=%s\n' "$key" "$value" >> "$tmp"
+  mv "$tmp" "$file"
+}
+
+# Removes KEY from theme <id>'s override file. Deletes the file once it has
+# neither key left, so an untouched theme goes back to having no file at all.
+_override_unset() {
+  local id=$1 key=$2 file tmp
+  file=$(_override_file "$id")
+  [[ -f "$file" ]] || return 0
+  tmp=$(mktemp)
+  grep -v "^$key=" "$file" > "$tmp" || true
+  if [[ -s "$tmp" ]]; then mv "$tmp" "$file"; else rm -f "$tmp" "$file"; fi
+}
+
+theme_get_accent()    { _override_get   "$1" ACCENT; }
+theme_set_accent()    { _override_set   "$1" ACCENT "$2"; }
+theme_reset_accent()  { _override_unset "$1" ACCENT; }
+
+theme_get_wallpaper()   { _override_get   "$1" WALLPAPER; }
+theme_set_wallpaper()   { _override_set   "$1" WALLPAPER "$2"; }
+theme_reset_wallpaper() { _override_unset "$1" WALLPAPER; }
 
 # ---- saved state -------------------------------------------------------------
 

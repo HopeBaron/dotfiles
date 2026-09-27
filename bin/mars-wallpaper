@@ -2,17 +2,29 @@
 # Set the desktop wallpaper: applies it live through hyprpaper and saves it
 # for the next login.
 #
-#   mars-wallpaper list            wallpapers in the repo's wallpapers/ dir
-#   mars-wallpaper current         path of the saved wallpaper
-#   mars-wallpaper set <name|path> a file in wallpapers/, or any image path
+#   mars-wallpaper list                 wallpapers in the repo's wallpapers/ dir
+#   mars-wallpaper current              path of the currently active wallpaper
+#   mars-wallpaper set <name|path> [theme-id ...]
+#                                        set the wallpaper for the given
+#                                        themes, or the current one if none
+#                                        given -- name is a file in
+#                                        wallpapers/, or any image path
+#   mars-wallpaper apply <path>         make <path> live right now, without
+#                                        saving it as any theme's own choice
+#                                        (mars-theme uses this when switching
+#                                        to a theme that already has one)
 #
-# The choice lives in ~/.local/state/mars/wallpaper.conf, which
+# The live wallpaper lives in ~/.local/state/mars/wallpaper.conf, which
 # config/.config/hypr/hyprpaper.conf sources -- so switching never edits a
-# tracked file.
+# tracked file. A theme you have explicitly given a wallpaper remembers it in
+# ~/.local/state/mars/themes/<id>.env (see theme/lib.sh) and restores it
+# whenever you switch back; an untouched theme just keeps whatever is
+# already showing.
 set -euo pipefail
 
-# shellcheck source=../lib/mars.sh
-. "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/mars.sh"
+REPO=$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)
+# shellcheck source=../theme/lib.sh
+. "$REPO/theme/lib.sh"   # also brings in lib/mars.sh (MARS_WALLPAPER_DIR, ...)
 
 readonly STATE_FILE="$MARS_STATE_DIR/wallpaper.conf"
 readonly IMAGE_PATTERN='.*\.(jpe?g|png|webp)$'
@@ -43,32 +55,62 @@ resolve() {
   fi
 }
 
-save() {
+# Makes <path> the live wallpaper: writes the state file hyprpaper.conf
+# sources, and nudges a running hyprpaper over IPC. Does not touch any
+# theme's own remembered choice -- see cmd_set for that.
+cmd_apply() {
+  local path=${1:?usage: mars-wallpaper apply <path>}
   mkdir -p "$MARS_STATE_DIR"
   cat > "$STATE_FILE" <<CONF
 # Written by mars-wallpaper; sourced by ~/.config/hypr/hyprpaper.conf.
 wallpaper {
     monitor =
-    path = $1
+    path = $path
     fit_mode = cover
 }
 CONF
-}
-
-cmd_set() {
-  local path
-  path=$(resolve "${1:?usage: mars-wallpaper set <name|path>}")
-  save "$path"
   if pgrep -x hyprpaper >/dev/null; then
     hyprctl hyprpaper wallpaper ",$path,cover" >/dev/null
   fi
-  echo "Wallpaper: $path"
+}
+
+# Sets the wallpaper for one or more themes. With no theme-id, only the
+# current theme is affected -- the ordinary single-theme case. The live
+# wallpaper only changes if the current theme is among the targets.
+cmd_set() {
+  local path
+  path=$(resolve "${1:?usage: mars-wallpaper set <name|path> [theme-id ...]}")
+  shift
+  local targets=("$@") id
+
+  state_load   # THEME = current theme, for the "is it among the targets?" check
+  (( ${#targets[@]} == 0 )) && targets=("$THEME")
+
+  for id in "${targets[@]}"; do theme_set_wallpaper "$id" "$path"; done
+
+  local applied=0
+  for id in "${targets[@]}"; do
+    if [[ "$id" == "$THEME" ]]; then
+      cmd_apply "$path"
+      applied=1
+      break
+    fi
+  done
+
+  if (( ${#targets[@]} > 1 )); then
+    echo "Wallpaper: $path (applied to ${#targets[@]} themes)"
+  elif (( applied )); then
+    echo "Wallpaper: $path"
+  else
+    echo "Wallpaper: $path (saved for ${targets[0]}; switch to it to see it)"
+  fi
 }
 
 case "${1:-}" in
   list)    cmd_list ;;
   current) cmd_current ;;
-  set)     cmd_set "${2:-}" ;;
+  set)     shift; cmd_set "$@" ;;
+  apply)   cmd_apply "${2:-}" ;;
   -h|--help|help) usage ;;
   *) usage 2 ;;
 esac
