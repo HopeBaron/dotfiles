@@ -11,8 +11,6 @@
 set -euo pipefail
 # shellcheck source=../../../../lib/mars.sh
 . "$(dirname "$(readlink -f "$0")")/../../../../lib/mars.sh"
-# shellcheck source=../../../../theme/lib.sh
-. "$MARS_REPO/theme/lib.sh"
 
 readonly PIN_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/cliphist/pins"
 readonly IMAGE_CACHE="$MARS_CACHE_DIR/clipboard"
