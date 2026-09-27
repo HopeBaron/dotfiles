@@ -1,0 +1,140 @@
+#!/usr/bin/env bash
+# Switch the desktop's colour theme and accent, and apply it everywhere.
+#
+#   mars-theme list                 theme ids, one per line ("id<TAB>label")
+#   mars-theme current              the saved theme and accent
+#   mars-theme set <theme-id>       switch theme (accent is kept)
+#   mars-theme accent <name|#hex>   switch accent: red orange yellow green
+#                                   aqua blue purple, or any #rrggbb
+#   mars-theme apply                re-render the saved choice and push it
+#                                   into running apps (install.sh uses this)
+#
+# Choice is saved in ~/.local/state/mars/theme.env; see theme/lib.sh.
+set -euo pipefail
+
+REPO=$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)
+# shellcheck source=../theme/lib.sh
+. "$REPO/theme/lib.sh"
+
+usage() {
+  sed -n '2,/^[^#]/{/^#/p}' "$0" | sed 's/^# \{0,1\}//'
+  exit "${1:-0}"
+}
+
+notify() {
+  command -v notify-send >/dev/null && notify-send -a theme "$@" || true
+}
+
+running() { pgrep -x "$1" >/dev/null; }
+
+# ---- pushing a freshly rendered theme into running apps ----------------------
+# Each step is independent and silent when its app isn't running, so this is
+# safe from a TTY, from install.sh, or mid-session.
+
+reload_hyprland() {
+  [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]] && hyprctl reload >/dev/null || true
+}
+
+reload_waybar()  { running waybar && pkill -SIGUSR2 -x waybar || true; }  # re-reads config + CSS
+reload_swaync()  { running swaync && swaync-client --reload-css >/dev/null || true; }
+reload_kitty()   { running kitty  && pkill -SIGUSR1 -x kitty  || true; }  # re-reads kitty.conf
+
+# swayosd only reads its stylesheet at start-up.
+reload_swayosd() {
+  running swayosd-server || return 0
+  pkill -x swayosd-server
+  setsid swayosd-server >/dev/null 2>&1 &
+}
+
+# GTK3 apps follow these keys live. GTK only re-reads a theme whose NAME
+# changed, so bounce through Adwaita to make it reload the re-rendered CSS.
+apply_gsettings() {
+  command -v gsettings >/dev/null || return 0
+  local schema=org.gnome.desktop.interface
+  gsettings set $schema color-scheme "$COLOR_SCHEME"
+  gsettings set $schema icon-theme "$ICON_THEME"
+  gsettings set $schema font-name 'Roboto 10'
+  gsettings set $schema monospace-font-name 'JetBrainsMono Nerd Font 10'
+  gsettings set $schema gtk-theme 'Adwaita'
+  gsettings set $schema gtk-theme 'Gruvbox-Material'
+}
+
+# KDE apps (Dolphin) re-read their colour scheme on this broadcast.
+notify_kde_apps() {
+  command -v dbus-send >/dev/null || return 0
+  dbus-send --session --type=signal /KGlobalSettings \
+    org.kde.KGlobalSettings.notifyChange int32:0 int32:0 2>/dev/null || true
+}
+
+# Running Neovim instances re-read the theme state (see nvim's mars/theme.lua).
+reload_neovim() {
+  command -v nvim >/dev/null || return 0
+  local socket
+  for socket in "${XDG_RUNTIME_DIR:-/tmp}"/nvim.*.0; do
+    [[ -S "$socket" ]] || continue
+    nvim --server "$socket" --remote-send '<Cmd>lua require("mars.theme").apply()<CR>' \
+      >/dev/null 2>&1 || true
+  done
+}
+
+apply() {
+  "$REPO/theme/render.sh" >/dev/null
+  theme_activate   # the rendered values, for the steps below
+  reload_hyprland
+  reload_waybar
+  reload_swaync
+  reload_kitty
+  reload_swayosd
+  apply_gsettings
+  notify_kde_apps
+  reload_neovim
+}
+
+# ---- commands ----------------------------------------------------------------
+
+cmd_list() {
+  local id
+  while read -r id; do
+    printf '%s\t%s\n' "$id" "$(theme_label "$id")"
+  done < <(theme_list)
+}
+
+cmd_current() {
+  state_load
+  printf 'theme\t%s\t%s\naccent\t%s\n' "$THEME" "$(theme_label "$THEME")" "$ACCENT_SPEC"
+}
+
+cmd_set() {
+  local id=${1:?usage: mars-theme set <theme-id>}
+  theme_exists "$id" || { echo "unknown theme: $id (see: mars-theme list)" >&2; exit 1; }
+  state_load
+  state_save "$id" "$ACCENT_SPEC"
+  apply
+  notify "Theme: $(theme_label "$id")" "Restart open Qt/KDE and GTK4 apps to pick it up everywhere"
+}
+
+cmd_accent() {
+  local spec
+  spec=$(accent_normalize "${1:?usage: mars-theme accent <name|#rrggbb>}") || {
+    echo "not an accent: $1 (use ${MARS_ACCENT_NAMES[*]} or #rrggbb)" >&2
+    exit 1
+  }
+  state_load
+  state_save "$THEME" "$spec"
+  apply
+  notify "Accent: $spec"
+}
+
+main() {
+  case "${1:-}" in
+    list)    cmd_list ;;
+    current) cmd_current ;;
+    set)     cmd_set "${2:-}" ;;
+    accent)  cmd_accent "${2:-}" ;;
+    apply)   apply ;;
+    -h|--help|help) usage ;;
+    *) usage 2 ;;
+  esac
+}
+
+main "$@"

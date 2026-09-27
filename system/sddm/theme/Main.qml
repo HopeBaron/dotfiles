@@ -1,6 +1,6 @@
 // Login screen, laid out to match hyprlock.conf so logging in and unlocking
 // look like the same screen. Colours come from theme.conf (rendered from
-// theme/palette.sh) -- no hex values belong in this file.
+// the active theme) -- no hex values belong in this file.
 import QtQuick
 import QtQuick.Effects
 
@@ -125,8 +125,8 @@ Rectangle {
                 verticalAlignment: TextInput.AlignVCenter
                 text: userModel.lastUser
                 color: config.fg0
-                selectionColor: config.green
-                selectedTextColor: config.bg0
+                selectionColor: config.accent
+                selectedTextColor: config.accentFg
                 font { family: root.fontFamily; pixelSize: 13; bold: true }
                 clip: true
                 enabled: !root.checking
@@ -170,9 +170,9 @@ Rectangle {
                 verticalAlignment: TextInput.AlignVCenter
                 echoMode: TextInput.Password
                 passwordCharacter: "•"
-                color: config.green
-                selectionColor: config.green
-                selectedTextColor: config.bg0
+                color: config.accent
+                selectionColor: config.accent
+                selectedTextColor: config.accentFg
                 font { family: root.fontFamily; pixelSize: 13; bold: true }
                 clip: true
                 enabled: !root.checking
@@ -200,13 +200,13 @@ Rectangle {
             width: root.fieldWidth
             height: root.fieldHeight
             radius: 4
-            color: loginArea.pressed ? root.tint(config.green, 0.75)
-                 : loginArea.containsMouse ? root.tint(config.green, 0.88)
-                 : config.green
+            color: loginArea.pressed ? root.tint(config.accent, 0.75)
+                 : loginArea.containsMouse ? root.tint(config.accent, 0.88)
+                 : config.accent
             Text {
                 anchors.centerIn: parent
                 text: root.checking ? "Logging in..." : "Login"
-                color: config.bg0
+                color: config.accentFg
                 font { family: root.fontFamily; pixelSize: 13; bold: true }
             }
             MouseArea {
@@ -226,7 +226,7 @@ Rectangle {
         id: btn
         property string icon
         property string label
-        property color hoverColor: config.green
+        property color hoverColor: config.accent
         property bool active: false
         signal activated()
         height: parent.height
@@ -316,7 +316,7 @@ Rectangle {
             anchors.verticalCenter: parent.verticalCenter
             text: "●"
             visible: row.marked
-            color: config.green
+            color: config.accent
             font { family: root.fontFamily; pixelSize: 10 }
         }
         Text {
@@ -324,7 +324,7 @@ Rectangle {
             x: 30
             anchors.verticalCenter: parent.verticalCenter
             text: row.label
-            color: row.marked ? config.green : config.fg0
+            color: row.marked ? config.accent : config.fg0
             font { family: root.fontFamily; pixelSize: 13 }
         }
         MouseArea {

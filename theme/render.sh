@@ -1,56 +1,87 @@
 #!/usr/bin/env bash
-# Render every theme/templates/* into its app config, substituting palette vars.
-# Templates use ${BG0} style placeholders. Run after editing theme/palette.sh.
+# Render every template in theme/templates/ into the config it belongs to,
+# for the saved theme + accent (see theme/lib.sh). Normally run through
+# `mars-theme`, which also pushes the result into running apps.
+#
+# Templates use ${VAR} placeholders from MARS_TEMPLATE_VARS only; outputs are
+# gitignored, since they change with every theme switch.
 set -euo pipefail
-here=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
-repo=$(dirname "$here")
 
-set -a; . "$here/palette.sh"; set +a
+# shellcheck source=lib.sh
+. "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-# Substitute ONLY the palette names. Bare `envsubst` would also expand $HOME
-# and friends, baking this machine's paths into committed files.
-vars=$(sed -n 's/^\([A-Z0-9_]\+\)=.*/${\1}/p' "$here/palette.sh" | tr '\n' ' ')
+readonly TEMPLATES="$MARS_THEME_DIR/templates"
+readonly GTK_THEME_DIR="config/.local/share/themes/Gruvbox-Material"
 
-render() { envsubst "$vars" < "$here/templates/$1" > "$repo/config/.config/$2"; echo "  rendered $2"; }
+# template                    -> output (relative to the repo root)
+readonly RENDER_TABLE=(
+  "hypr-colors.lua            config/.config/hypr/colors.lua"
+  "hyprlock.conf              config/.config/hypr/hyprlock.conf"
+  "kitty-colors.conf          config/.config/kitty/colors.conf"
+  "rofi-theme.rasi            config/.config/rofi/gruvbox-material.rasi"
+  "waybar-config.jsonc        config/.config/waybar/config.jsonc"
+  "waybar-style.css           config/.config/waybar/style.css"
+  "swaync-style.css           config/.config/swaync/style.css"
+  "swayosd-style.css          config/.config/swayosd/style.css"
+  "yazi-theme.toml            config/.config/yazi/theme.toml"
+  "qt6ct-colors.conf          config/.config/qt6ct/colors/gruvbox-material.conf"
+  "qt-tab-close.svg           config/.config/qt6ct/qss/tab-close.svg"
+  "qt-tab-close-hover.svg     config/.config/qt6ct/qss/tab-close-hover.svg"
+  "kdeglobals                 config/.config/kdeglobals"
+  "kdeglobals                 config/.local/share/color-schemes/GruvboxMaterial.colors"
+  "gtk4-settings.ini          config/.config/gtk-4.0/settings.ini"
+  "gtk4-libadwaita.css        config/.config/gtk-4.0/gtk.css"
+  "sddm-theme.conf            system/sddm/theme/theme.conf"
+)
 
-# qt6ct.conf needs an absolute path to the colour scheme (qt6ct does not
-# expand ~), which must resolve correctly on whatever machine this runs on --
-# not the machine that committed it. Unlike the general `render`, this widens
-# the whitelist to include ${HOME}, deliberately and only for this one file:
-# render.sh always runs ON the deploying machine itself, so the value baked in
-# is that machine's real $HOME, not a stray one shipped in from git.
-render_with_home() { envsubst "$vars \${HOME}" < "$here/templates/$1" > "$repo/config/.config/$2"; echo "  rendered $2"; }
+# These embed absolute paths (qt6ct expands neither ~ nor relative paths), so
+# they also get ${HOME} -- this machine's, since render always runs on the
+# machine being themed.
+readonly RENDER_WITH_HOME_TABLE=(
+  "qt6ct.conf                 config/.config/qt6ct/qt6ct.conf"
+  "qt-style.qss               config/.config/qt6ct/qss/gruvbox-material.qss"
+)
 
-# For files that are not under ~/.config (system/ is copied into / by install.sh).
-render_repo() { envsubst "$vars" < "$here/templates/$1" > "$repo/$2"; echo "  rendered $2"; }
+envsubst_vars() {
+  local name out=""
+  for name in "${MARS_TEMPLATE_VARS[@]}" "$@"; do out+="\${$name} "; done
+  echo "$out"
+}
 
-echo "Rendering Gruvbox Material (dark/medium/material):"
-render hypr-colors.lua   hypr/colors.lua
-render kitty-colors.conf kitty/colors.conf
-render rofi-theme.rasi   rofi/gruvbox-material.rasi
-render waybar-config.jsonc waybar/config.jsonc
-render waybar-style.css  waybar/style.css
-render swaync-style.css  swaync/style.css
-render yazi-theme.toml   yazi/theme.toml
-render qt6ct-colors.conf qt6ct/colors/gruvbox-material.conf
-render_with_home qt6ct.conf qt6ct/qt6ct.conf
-render_with_home qt-style.qss qt6ct/qss/gruvbox-material.qss
-render qt-tab-close.svg       qt6ct/qss/tab-close.svg
-render qt-tab-close-hover.svg qt6ct/qss/tab-close-hover.svg
-render hyprlock.conf     hypr/hyprlock.conf
-render_repo sddm-theme.conf system/sddm/theme/theme.conf
-render_repo gtk3.css config/.local/share/themes/Gruvbox-Material/gtk-3.0/gtk.css
-# Plain (non-libadwaita) GTK4 apps like pavucontrol load the theme's gtk-4.0/.
-# GTK4 keeps GTK3's widget node names, so the same rules apply; only the base
-# stylesheet they recolour differs.
-mkdir -p "$repo/config/.local/share/themes/Gruvbox-Material/gtk-4.0"
-sed 's|theme/Adwaita/gtk-contained-dark.css|theme/Default/Default-dark.css|' \
-  "$repo/config/.local/share/themes/Gruvbox-Material/gtk-3.0/gtk.css" \
-  > "$repo/config/.local/share/themes/Gruvbox-Material/gtk-4.0/gtk.css"
-echo "  rendered config/.local/share/themes/Gruvbox-Material/gtk-4.0/gtk.css"
-render gtk4.css          gtk-4.0/gtk.css
-render kdeglobals        kdeglobals
-# KF6 apps look the scheme up BY NAME ([General] ColorScheme) and fall back to
-# Breeze if no such .colors file exists -- kdeglobals alone is not enough.
-render_repo kdeglobals config/.local/share/color-schemes/GruvboxMaterial.colors
-echo "Done. Reload: hyprctl reload  /  kitty @ load-config"
+render_file() {
+  local template=$1 output=$2 vars=$3
+  mkdir -p "$(dirname "$MARS_REPO/$output")"
+  envsubst "$vars" < "$TEMPLATES/$template" > "$MARS_REPO/$output"
+  echo "  $output"
+}
+
+render_table() {
+  local vars=$1; shift
+  local row template output
+  for row in "$@"; do
+    read -r template output <<<"$row"
+    render_file "$template" "$output" "$vars"
+  done
+}
+
+# One stylesheet serves both GTK versions: it recolours GTK's own base theme,
+# which lives at a different resource path (and name) in GTK3 and GTK4.
+render_gtk_theme() {
+  local vars
+  vars=$(envsubst_vars GTK_BASE_URL)
+  export GTK_BASE_URL
+  GTK_BASE_URL="resource:///org/gtk/libgtk/theme/Adwaita/$GTK3_BASE_CSS"
+  render_file gtk-theme.css "$GTK_THEME_DIR/gtk-3.0/gtk.css" "$vars"
+  GTK_BASE_URL="resource:///org/gtk/libgtk/theme/Default/$GTK4_BASE_CSS"
+  render_file gtk-theme.css "$GTK_THEME_DIR/gtk-4.0/gtk.css" "$vars"
+}
+
+main() {
+  theme_activate
+  echo "Rendering $THEME_LABEL, accent $ACCENT_SPEC (#$ACCENT):"
+  render_table "$(envsubst_vars)" "${RENDER_TABLE[@]}"
+  render_table "$(envsubst_vars HOME)" "${RENDER_WITH_HOME_TABLE[@]}"
+  render_gtk_theme
+}
+
+main "$@"

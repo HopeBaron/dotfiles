@@ -5,3 +5,28 @@
 # binaries themselves don't belong in git history.
 /wallpapers/*
 !/wallpapers/.gitkeep
+
+# Rendered by theme/render.sh for the active theme -- they change on every
+# theme switch, so they are build output, not source. Keep this list in step
+# with RENDER_TABLE / RENDER_WITH_HOME_TABLE / render_gtk_theme in render.sh.
+/config/.config/gtk-4.0/gtk.css
+/config/.config/gtk-4.0/settings.ini
+/config/.config/hypr/colors.lua
+/config/.config/hypr/hyprlock.conf
+/config/.config/kdeglobals
+/config/.config/kitty/colors.conf
+/config/.config/qt6ct/colors/gruvbox-material.conf
+/config/.config/qt6ct/qss/gruvbox-material.qss
+/config/.config/qt6ct/qss/tab-close-hover.svg
+/config/.config/qt6ct/qss/tab-close.svg
+/config/.config/qt6ct/qt6ct.conf
+/config/.config/rofi/gruvbox-material.rasi
+/config/.config/swaync/style.css
+/config/.config/swayosd/style.css
+/config/.config/waybar/config.jsonc
+/config/.config/waybar/style.css
+/config/.config/yazi/theme.toml
+/config/.local/share/color-schemes/GruvboxMaterial.colors
+/config/.local/share/themes/Gruvbox-Material/gtk-3.0/gtk.css
+/config/.local/share/themes/Gruvbox-Material/gtk-4.0/gtk.css
+/system/sddm/theme/theme.conf

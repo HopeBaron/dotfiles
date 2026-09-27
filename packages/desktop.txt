@@ -21,6 +21,7 @@ bluez                       # bluetooth stack
 bluez-utils                 # bluetoothctl, used by the bluetooth module
 cliphist                    # clipboard history store
 wl-clipboard                # wl-copy / wl-paste, used by cliphist
+imagemagick                 # thumbnails for the wallpaper/clipboard previews (lib/mars.sh)
 dolphin                     # file manager, SUPER+E. Themed by kdeglobals + the
                             # GruvboxMaterial .colors scheme (render.sh), qt6ct QSS
 yazi                        # TUI file manager, SUPER+SHIFT+E
