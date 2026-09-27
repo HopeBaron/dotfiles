@@ -19,3 +19,11 @@ git                         # lazy.nvim clones plugins with it
 ripgrep                     # telescope's live_grep
 fd                          # telescope's file-finding (faster than default find)
 base-devel                  # make+gcc, needed to build telescope-fzf-native's C extension
+
+# everyday apps
+ark                         # archives; Dolphin's right-click compress/extract
+mpv                         # video player
+okular                      # PDF/document viewer (KDE: themed like Dolphin)
+loupe                       # image viewer
+ffmpegthumbs                # Dolphin video thumbnails (it ignores ffmpegthumbnailer)
+kdegraphics-thumbnailers    # Dolphin PDF/image thumbnails
