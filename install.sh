@@ -98,9 +98,21 @@ else
   echo "  yay not found; skipping packages/aur.txt (app icons fall back to breeze)."
 fi
 
-# GTK apps (swaync included) read the icon theme from this key, not from a
-# file this repo could stow -- ~/.config/gtk-3.0 also holds user bookmarks.
+# GTK3 apps on Wayland read theme/icons/fonts from these keys, not from a file
+# this repo could stow -- ~/.config/gtk-3.0 also holds user bookmarks. GTK4
+# reads config/.config/gtk-4.0/settings.ini (swaync included).
+gsettings set org.gnome.desktop.interface gtk-theme 'Gruvbox-Material'
 gsettings set org.gnome.desktop.interface icon-theme 'Gruvbox-Plus-Dark'
+gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+gsettings set org.gnome.desktop.interface font-name 'Roboto 10'
+gsettings set org.gnome.desktop.interface monospace-font-name 'JetBrainsMono Nerd Font 10'
+
+# Dolphin (KF6) picks its colours from its own setting, loading the named
+# .colors file from ~/.local/share/color-schemes (rendered by render.sh);
+# kdeglobals alone leaves it on Breeze Light. dolphinrc is also Dolphin's
+# state file, so it is set here rather than stowed.
+command -v kwriteconfig6 >/dev/null &&
+  kwriteconfig6 --file dolphinrc --group UiSettings --key ColorScheme GruvboxMaterial
 
 # WantedBy=graphical-session.target, so enabling it is what makes it start --
 # a plain `systemctl --user start` would not survive the next login.

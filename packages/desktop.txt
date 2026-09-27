@@ -21,7 +21,9 @@ bluez                       # bluetooth stack
 bluez-utils                 # bluetoothctl, used by the bluetooth module
 cliphist                    # clipboard history store
 wl-clipboard                # wl-copy / wl-paste, used by cliphist
-yazi                        # TUI file manager
+dolphin                     # file manager, SUPER+E. Themed by kdeglobals + the
+                            # GruvboxMaterial .colors scheme (render.sh), qt6ct QSS
+yazi                        # TUI file manager, SUPER+SHIFT+E
 hyprpaper                   # wallpaper daemon; misc.background_color is the fallback under it
 grim                        # screenshot capture (wlr-screencopy)
 slurp                       # interactive region/window picker for grim

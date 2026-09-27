@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=Gruvbox-Material
+Comment=Gruvbox Material, rendered from theme/palette.sh
+
+[X-GNOME-Metatheme]
+GtkTheme=Gruvbox-Material
+IconTheme=Gruvbox-Plus-Dark

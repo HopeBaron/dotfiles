@@ -39,7 +39,8 @@ hl.monitor({
 
 -- Set programs that you use
 local terminal    = "kitty"
-local fileManager = terminal .. " -e yazi"   -- TUI, needs a terminal
+local fileManager = "dolphin"
+local tuiFileManager = terminal .. " -e yazi"   -- TUI, needs a terminal
 local scripts     = os.getenv("HOME") .. "/.config/hypr/scripts"
 local menu        = scripts .. "/rofi-launch.sh"
 
@@ -84,6 +85,9 @@ hl.env("HYPRCURSOR_SIZE", "24")
 -- stock style ignoring every colour we set elsewhere. qt6ct's scheme is
 -- generated from the same palette (theme/render.sh) as everything else.
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
+-- GTK 4.22 ignores gtk-theme-name for plain (non-libadwaita) GTK4 apps like
+-- pavucontrol; only this variable makes them load our rendered theme.
+hl.env("GTK_THEME", "Gruvbox-Material")
 
 -- NVIDIA (proprietary driver, GTX 1660 Super) + wlroots hardware-cursor
 -- planes don't reliably release/reacquire across a VT switch -- reproduced
@@ -329,7 +333,8 @@ hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal), { description = "Term
 local closeWindowBind = hl.bind(mainMod .. " + X", hl.dsp.window.close(), { description = "Close window" })
 -- closeWindowBind:set_enabled(false)
 hl.bind(mainMod .. " + SHIFT + X", hl.dsp.window.kill(), { description = "Force close window" })
-hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager), { description = "File manager (yazi)" })
+hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager), { description = "File manager (Dolphin)" })
+hl.bind(mainMod .. " + SHIFT + E", hl.dsp.exec_cmd(tuiFileManager), { description = "File manager (yazi)" })
 hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd(scripts .. "/rofi-clipboard.sh"), { description = "Clipboard history" })
 -- Fullscreen covers the whole output; maximized keeps the bar and gaps.
 -- Plain F is maximize, not fullscreen -- it's the one used more often.

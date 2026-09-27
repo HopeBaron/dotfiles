@@ -34,6 +34,23 @@ render swaync-style.css  swaync/style.css
 render yazi-theme.toml   yazi/theme.toml
 render qt6ct-colors.conf qt6ct/colors/gruvbox-material.conf
 render_with_home qt6ct.conf qt6ct/qt6ct.conf
+render_with_home qt-style.qss qt6ct/qss/gruvbox-material.qss
+render qt-tab-close.svg       qt6ct/qss/tab-close.svg
+render qt-tab-close-hover.svg qt6ct/qss/tab-close-hover.svg
 render hyprlock.conf     hypr/hyprlock.conf
 render_repo sddm-theme.conf system/sddm/theme/theme.conf
+render_repo gtk3.css config/.local/share/themes/Gruvbox-Material/gtk-3.0/gtk.css
+# Plain (non-libadwaita) GTK4 apps like pavucontrol load the theme's gtk-4.0/.
+# GTK4 keeps GTK3's widget node names, so the same rules apply; only the base
+# stylesheet they recolour differs.
+mkdir -p "$repo/config/.local/share/themes/Gruvbox-Material/gtk-4.0"
+sed 's|theme/Adwaita/gtk-contained-dark.css|theme/Default/Default-dark.css|' \
+  "$repo/config/.local/share/themes/Gruvbox-Material/gtk-3.0/gtk.css" \
+  > "$repo/config/.local/share/themes/Gruvbox-Material/gtk-4.0/gtk.css"
+echo "  rendered config/.local/share/themes/Gruvbox-Material/gtk-4.0/gtk.css"
+render gtk4.css          gtk-4.0/gtk.css
+render kdeglobals        kdeglobals
+# KF6 apps look the scheme up BY NAME ([General] ColorScheme) and fall back to
+# Breeze if no such .colors file exists -- kdeglobals alone is not enough.
+render_repo kdeglobals config/.local/share/color-schemes/GruvboxMaterial.colors
 echo "Done. Reload: hyprctl reload  /  kitty @ load-config"
