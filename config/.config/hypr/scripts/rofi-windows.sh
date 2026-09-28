@@ -4,11 +4,16 @@
 # One menu instead of two binds: starts on the active workspace, Alt+a
 # toggles to every window (tagged with its workspace) and back, so switching
 # scope never means pressing a different key combo, just a footer action --
-# same shape as the clipboard and screenshot menus.
+# same shape as the clipboard and screenshot menus. Alt+x / Alt+Shift+x close
+# or force-close the highlighted window (same two dispatchers as the SUPER+X
+# / SUPER+SHIFT+X binds) without leaving the menu, in either scope.
 #
 # rofi has a built-in `window` mode, but it only sees the active workspace on
 # Hyprland, so the list is built from `hyprctl clients` instead.
 set -euo pipefail
+
+# rofi exit codes for this script's own -kb-custom-N (10 + N - 1).
+readonly KEY_CLOSE=10 KEY_KILL=11 KEY_SCOPE=14
 
 scope=${1:-workspace}   # workspace | global -- starting scope; Alt+a toggles it
 
@@ -57,14 +62,15 @@ while :; do
     list=$(printf '%s\n' "${rows[@]}" | cut -f2-)
   fi
 
-  # rofi exits non-zero for Escape (1) and for -kb-custom-5 (14 = 10+5-1);
+  # rofi exits non-zero for Escape (1) and for each -kb-custom-N (10+N-1);
   # `|| rc=$?` records that instead of letting `set -e` end the script.
   rc=0
   choice=$(printf '%s\n' "$list" \
-    | rofi -dmenu -i -p "$prompt" -mesg "<b>Enter</b> focus   <b>Alt+a</b> $hint" \
-           -kb-custom-5 "Alt+a") || rc=$?
+    | rofi -dmenu -i -p "$prompt" \
+           -mesg "<b>Enter</b> focus   <b>Alt+x</b> close   <b>Alt+Shift+x</b> force close   <b>Alt+a</b> $hint" \
+           -kb-custom-1 "Alt+x" -kb-custom-2 "Alt+shift+x" -kb-custom-5 "Alt+a") || rc=$?
 
-  if [ "$rc" -eq 14 ]; then
+  if [ "$rc" -eq "$KEY_SCOPE" ]; then
     [ "$scope" = workspace ] && scope=global || scope=workspace
     continue
   fi
@@ -72,6 +78,12 @@ while :; do
   [ -z "${choice:-}" ] && exit 0
   [ "${#rows[@]}" -eq 0 ] && exit 0   # only the placeholder row existed
   addr=$(printf '%s\n' "${rows[@]}" | awk -F'\t' -v c="$choice" '$2 == c { print $1; exit }')
-  [ -n "$addr" ] && hyprctl dispatch "hl.dsp.focus({ window = \"address:$addr\" })"
+  [ -n "$addr" ] || exit 0
+
+  case "$rc" in
+    "$KEY_CLOSE") hyprctl dispatch "hl.dsp.window.close({ window = \"address:$addr\" })"; continue ;;
+    "$KEY_KILL")  hyprctl dispatch "hl.dsp.window.kill({ window = \"address:$addr\" })";  continue ;;
+    *) hyprctl dispatch "hl.dsp.focus({ window = \"address:$addr\" })" ;;
+  esac
   exit 0
 done
