@@ -61,16 +61,27 @@ separator { background-color: #${BG3}; }
 
 /* ---------- selection: green fill, dark text (qt6ct's Highlight) ---------- */
 
+/* background-image: none on every rule below that colours a STATE (hover,
+   checked, active, disabled, selected, destructive/suggested-action): Adwaita
+   sets its own `background-image: image(#hex)` on most of these same
+   selectors, and an image layer paints over a background-color layer
+   regardless of which rule comes later in the cascade -- so without this,
+   Adwaita's own dark state colour silently wins despite our background-color
+   "winning" by source order (verified: Remmina's toggled-on toolbar buttons
+   rendered near-black on near-black from exactly this, before this fix). */
+
 *:selected, .view:selected, iconview:selected, treeview.view:selected,
 row:selected, flowboxchild:selected, placessidebar row:selected,
 textview text selection, entry selection, label selection {
+  background-image: none;
   background-color: #${ACCENT};
   color: #${ACCENT_FG};
 }
 row:hover:not(:selected), placessidebar row:hover:not(:selected) {
+  background-image: none;
   background-color: alpha(#${BG3}, 0.45);
 }
-iconview:hover:not(:selected) { background-color: alpha(#${BG3}, 0.45); }
+iconview:hover:not(:selected) { background-image: none; background-color: alpha(#${BG3}, 0.45); }
 
 /* ---------- buttons ---------- */
 
@@ -84,16 +95,41 @@ button {
   text-shadow: none;
   -gtk-icon-shadow: none;
 }
-button:hover     { background-color: #${BG3}; }
+button:hover     { background-image: none; background-color: #${BG3}; }
 button:active,
-button:checked   { background-color: #${ACCENT}; color: #${ACCENT_FG}; }
-button:disabled  { background-color: alpha(#${BG3}, 0.3); color: #${GREY1}; }
+button:checked   { background-image: none; background-color: #${ACCENT}; color: #${ACCENT_FG}; }
+button:disabled  { background-image: none; background-color: alpha(#${BG3}, 0.3); color: #${GREY1}; }
+
+/* A toolbar/headerbar toggle button (Remmina's search toggle is one) matches
+   a more specific Adwaita selector than plain button:checked above --
+   headerbar button.toggle:checked -- which also uses the `background`
+   shorthand (sets image AND colour together) rather than background-color
+   alone, so button:checked's fix doesn't reach it. Matched verbatim,
+   :backdrop included (an unfocused window's own checked-but-muted colour is
+   the same trap, one specificity notch quieter -- see the tooltip's WHY). */
+.titlebar button.toggle:checked, .titlebar stackswitcher button:checked,
+headerbar button.toggle:checked, headerbar stackswitcher button:checked,
+button.toggle:checked {
+  background: none;
+  background-color: #${ACCENT};
+  color: #${ACCENT_FG};
+  border-color: #${ACCENT};
+}
+.titlebar button.toggle:checked:backdrop, .titlebar stackswitcher button:checked:backdrop,
+headerbar button.toggle:checked:backdrop, headerbar stackswitcher button:checked:backdrop,
+button.toggle:checked:backdrop {
+  background: none;
+  background-color: alpha(#${ACCENT}, 0.6);
+  color: #${ACCENT_FG};
+  border-color: alpha(#${ACCENT}, 0.6);
+}
 button.flat, headerbar button.flat, .path-bar button:not(:checked) {
+  background-image: none;
   background-color: transparent;
 }
-button.flat:hover, .path-bar button:hover:not(:checked) { background-color: alpha(#${BG3}, 0.6); }
-button.destructive-action               { background-color: #${RED};   color: #${BG0}; }
-button.suggested-action                 { background-color: #${ACCENT}; color: #${ACCENT_FG}; }
+button.flat:hover, .path-bar button:hover:not(:checked) { background-image: none; background-color: alpha(#${BG3}, 0.6); }
+button.destructive-action               { background-image: none; background-color: #${RED};   color: #${BG0}; }
+button.suggested-action                 { background-image: none; background-color: #${ACCENT}; color: #${ACCENT_FG}; }
 
 /* ---------- inputs ---------- */
 
@@ -118,16 +154,18 @@ check, radio {
 }
 check:checked, radio:checked,
 check:indeterminate, radio:indeterminate {
+  background-image: none;
   background-color: #${ACCENT};
   border-color: #${ACCENT};
 }
 
-switch                 { background-color: #${BG3}; border-color: #${BG3}; }
-switch:checked         { background-color: #${ACCENT}; border-color: #${ACCENT}; }
+switch                 { background-image: none; background-color: #${BG3}; border-color: #${BG3}; }
+switch:checked         { background-image: none; background-color: #${ACCENT}; border-color: #${ACCENT}; }
 switch slider          { background-image: none; background-color: #${FG0}; border-color: #${BG3}; box-shadow: none; }
-switch:checked slider  { background-color: #${ACCENT_FG}; border-color: #${ACCENT}; }
+switch:checked slider  { background-image: none; background-color: #${ACCENT_FG}; border-color: #${ACCENT}; }
 
 progressbar trough, scale trough, levelbar trough {
+  background-image: none;
   background-color: #${BG3};
   border-color: #${BG3};
 }
@@ -141,6 +179,7 @@ scale slider { background-image: none; background-color: #${FG0}; border-color: 
 /* ---------- menus, popovers, tooltips ---------- */
 
 menu, .menu, .context-menu, popover, popover.background {
+  background-image: none;
   background-color: #${BG1};
   color: #${FG0};
   border: 1px solid #${BG3};
@@ -148,13 +187,15 @@ menu, .menu, .context-menu, popover, popover.background {
 }
 menu menuitem, .menu menuitem { color: #${FG0}; }
 menu menuitem:hover, .menu menuitem:hover, popover modelbutton:hover {
+  background-image: none;
   background-color: #${ACCENT};
   color: #${ACCENT_FG};
 }
 menubar { background: #${BG1}; box-shadow: none; }
-menubar > menuitem:hover { background: #${BG3}; color: #${FG0}; box-shadow: none; }
+menubar > menuitem:hover { background-image: none; background: #${BG3}; color: #${FG0}; box-shadow: none; }
 
 tooltip, tooltip.background {
+  background-image: none;
   background-color: #${BG1};
   color: #${FG0};
   border: 1px solid #${BG3};
@@ -162,7 +203,7 @@ tooltip, tooltip.background {
 tooltip * { background-color: transparent; }
 
 /* GTK4's base theme targets these with longer selectors; match them. */
-scale > trough > highlight, scale > trough > fill { background-color: #${ACCENT}; border-color: #${ACCENT}; }
+scale > trough > highlight, scale > trough > fill { background-image: none; background-color: #${ACCENT}; border-color: #${ACCENT}; }
 notebook > header > tabs > tab:checked { box-shadow: inset 0 -2px #${ACCENT}; }
 notebook > header.top > tabs > tab:checked { box-shadow: inset 0 -2px #${ACCENT}; }
 
@@ -174,9 +215,9 @@ notebook > header tab:checked { color: #${FG0}; box-shadow: inset 0 -2px #${ACCE
 notebook > stack:not(:only-child) { background-color: #${BG0}; }
 
 scrollbar                 { background-color: transparent; border-color: transparent; }
-scrollbar slider          { background-color: #${BG5}; border: none; }
-scrollbar slider:hover    { background-color: #${GREY0}; }
-scrollbar slider:active   { background-color: #${ACCENT}; }
+scrollbar slider          { background-image: none; background-color: #${BG5}; border: none; }
+scrollbar slider:hover    { background-image: none; background-color: #${GREY0}; }
+scrollbar slider:active   { background-image: none; background-color: #${ACCENT}; }
 
 *:link, link, button.link { color: #${ACCENT}; }
-rubberband, .rubberband   { background-color: alpha(#${ACCENT}, 0.2); border: 1px solid #${ACCENT}; }
+rubberband, .rubberband   { background-image: none; background-color: alpha(#${ACCENT}, 0.2); border: 1px solid #${ACCENT}; }
