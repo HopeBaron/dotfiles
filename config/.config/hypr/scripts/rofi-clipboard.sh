@@ -68,21 +68,21 @@ prune_image_cache() {
 
 # ---- building the menu -------------------------------------------------------
 
-# "● 󰐃 text": the ● "on the clipboard now" marker, then a pin glyph for a
-# pinned entry, then the preview. The row number and the thumbnail/placeholder
-# are separate rofi widgets (element-index, element-icon in preview.rasi) --
-# rofi lays those out before this text, so they are not part of the label.
+# "N  ● 󰐃 text", matching the window switcher's rows: a running number --
+# baked into the label itself, not rofi's element-index (see preview.rasi;
+# that widget stops at 10 regardless of how long the list actually is) --
+# then the ● "on the clipboard now" marker, then a pin glyph if pinned.
 label() {
-  local preview=$1 pinned=$2 mark="  "
+  local number=$1 preview=$2 pinned=$3 mark="  "
   is_current "$preview" && mark="● "
-  printf '%s%s%s' "$mark" "${pinned:+$PIN_ICON }" "$preview"
+  printf '%d  %s%s%s' "$number" "$mark" "${pinned:+$PIN_ICON }" "$preview"
 }
 
 # One row per entry: kind <SEP> key <SEP> label <SEP> icon-path
 #   kind  pin | hist      key  pin id | the full `cliphist list` line
 #   icon  always set: a real thumbnail for an image, the placeholder for text
 collect_rows() {
-  local file id preview line icon
+  local n=0 file id preview line icon
   declare -A pinned_previews=()
   declare -gA LISTED_IDS=()
 
@@ -91,20 +91,22 @@ collect_rows() {
     id=$(basename "$file" .txt)
     preview=$(head -c 200 "$file")
     pinned_previews["$preview"]=1
+    n=$((n + 1))
     icon=$(pin_image "$id") || icon=""   # text: no icon -- the pane stays empty for it
-    printf 'pin%s%s%s%s%s%s\n' "$SEP" "$id" "$SEP" "$(label "$preview" 1)" "$SEP" "$icon"
+    printf 'pin%s%s%s%s%s%s\n' "$SEP" "$id" "$SEP" "$(label "$n" "$preview" 1)" "$SEP" "$icon"
   done < <(ls -t "$PIN_DIR"/*.txt 2>/dev/null || true)
 
   while IFS= read -r line; do
     [[ -n "$line" ]] || continue
     preview=${line#*$'\t'}
     [[ -n "${pinned_previews["$preview"]:-}" ]] && continue   # already listed as a pin
+    n=$((n + 1))
     icon=""   # text: no icon -- the pane stays empty for it
     if is_image_preview "$preview"; then
       LISTED_IDS[${line%%$'\t'*}]=1
       icon=$(history_image "$line") || icon=""
     fi
-    printf 'hist%s%s%s%s%s%s\n' "$SEP" "$line" "$SEP" "$(label "$preview" "")" "$SEP" "$icon"
+    printf 'hist%s%s%s%s%s%s\n' "$SEP" "$line" "$SEP" "$(label "$n" "$preview" "")" "$SEP" "$icon"
   done < <(cliphist list 2>/dev/null || true)
 
   # Here, not in main: this function runs in a $(...) subshell, so
