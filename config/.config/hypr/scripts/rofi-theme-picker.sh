@@ -25,10 +25,8 @@ readonly UNCHECKED=$'\U000f0131'   # nf-md-checkbox_blank_outline
 readonly CURRENT_MARK='●'
 
 ids=() labels=()
-while IFS=$'\t' read -r id label; do
-  ids+=("$id"); labels+=("$label")
-done < <("$MARS_BIN/mars-theme" list)
-current=$("$MARS_BIN/mars-theme" current | awk -F'\t' '$1 == "theme" { print $2 }')
+mars_theme_list ids labels
+current=$(mars_theme_current)
 
 declare -A checked=()
 for id in "${ids[@]}"; do

@@ -9,10 +9,8 @@ readonly ICON_DARK=$'\U000f0594'   # nf-md-weather_night
 readonly ICON_LIGHT=$'\U000f05a8'  # nf-md-white_balance_sunny
 
 ids=() labels=()
-while IFS=$'\t' read -r id label; do
-  ids+=("$id"); labels+=("$label")
-done < <("$MARS_BIN/mars-theme" list)
-current=$("$MARS_BIN/mars-theme" current | awk -F'\t' '$1 == "theme" { print $2 }')
+mars_theme_list ids labels
+current=$(mars_theme_current)
 
 rows() {
   local i mark icon

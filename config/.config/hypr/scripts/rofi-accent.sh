@@ -85,11 +85,8 @@ case "$rc" in
     ;;
   "$KEY_APPLY_TO")
     spec=$(spec_for_row "$index") || exit 0
-    # mapfile itself succeeds regardless of the picker's own exit status
-    # (cancel/Escape) -- a cancelled picker just prints nothing, so this
-    # emptiness check is what actually catches that case.
-    mapfile -t targets < <("$SCRIPTS/rofi-theme-picker.sh")
-    (( ${#targets[@]} )) || exit 0
+    targets=()
+    pick_themes targets
     "$MARS_BIN/mars-theme" accent "$spec" "${targets[@]}"
     ;;
   *) exit 0 ;;

@@ -48,11 +48,8 @@ case "$rc" in
     "$MARS_BIN/mars-wallpaper" set "${names[$index]}" >/dev/null
     ;;
   "$KEY_APPLY_TO")
-    # mapfile itself succeeds regardless of the picker's own exit status
-    # (cancel/Escape) -- a cancelled picker just prints nothing, so this
-    # emptiness check is what actually catches that case.
-    mapfile -t targets < <("$SCRIPTS/rofi-theme-picker.sh")
-    (( ${#targets[@]} )) || exit 0
+    targets=()
+    pick_themes targets
     "$MARS_BIN/mars-wallpaper" set "${names[$index]}" "${targets[@]}" >/dev/null
     ;;
   *) exit 0 ;;
