@@ -20,6 +20,13 @@
 #             switching to that theme re-applies its own remembered choice.
 #             Also never touches the theme definitions -- same reason.
 
+# Include guard: mars-theme's `export` command sources theme/render.sh
+# directly (see its cmd_export), which sources this file again in the same
+# shell -- and the readonly declarations below would fail the second time
+# without this, since bin/mars-theme already sourced it once at start-up.
+[[ -n "${MARS_THEME_LIB_LOADED:-}" ]] && return 0
+readonly MARS_THEME_LIB_LOADED=1
+
 # shellcheck source=../lib/mars.sh
 . "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/mars.sh"   # MARS_REPO, MARS_STATE_DIR
 

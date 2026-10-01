@@ -11,6 +11,15 @@
 #                                        green aqua blue purple, or any #rrggbb
 #   mars-theme apply                    re-render the saved choice and push it
 #                                        into running apps (install.sh uses this)
+#   mars-theme export <theme-id> [accent] [out.zip]
+#                                        render a theme WITHOUT switching to it
+#                                        (the live config is untouched) and zip
+#                                        the result -- e.g. to hand a theme's
+#                                        generated CSS/QSS/conf to someone
+#                                        else. accent defaults to that theme's
+#                                        own remembered accent, or the overall
+#                                        default; out.zip defaults to
+#                                        ./<theme-id>.zip
 #
 # Current choice is saved in ~/.local/state/mars/theme.env. A theme you have
 # explicitly given its own accent (or mars-wallpaper its own wallpaper)
@@ -176,12 +185,53 @@ cmd_accent() {
   fi
 }
 
+cmd_export() {
+  local id=${1:?usage: mars-theme export <theme-id> [accent] [out.zip]}
+  theme_exists "$id" || { echo "unknown theme: $id (see: mars-theme list)" >&2; exit 1; }
+
+  local accent_arg=${2:-} out=${3:-"./$id.zip"}
+  out=$(realpath -m "$out")   # absolute, before we cd into the scratch dir below
+  local accent
+  if [[ -n "$accent_arg" ]]; then
+    accent=$(accent_normalize "$accent_arg") || {
+      echo "not an accent: $accent_arg (use ${MARS_ACCENT_NAMES[*]}, or #rrggbb)" >&2
+      exit 1
+    }
+  else
+    accent=$(theme_get_accent "$id")
+    [[ -n "$accent" ]] || accent=$MARS_DEFAULT_ACCENT
+  fi
+
+  theme_load "$id"
+  theme_derive "$accent"
+
+  local scratch
+  scratch=$(mktemp -d)
+  # EXIT, not RETURN: a RETURN trap would also fire the moment the `.
+  # render.sh` line below finishes sourcing, deleting $scratch before
+  # render_all ever runs.
+  # shellcheck disable=SC2064
+  trap "rm -rf '$scratch'" EXIT
+
+  export MARS_RENDER_ROOT=$scratch
+  # shellcheck source=../theme/render.sh
+  . "$REPO/theme/render.sh"
+  render_all >/dev/null
+  unset MARS_RENDER_ROOT
+
+  command -v bsdtar >/dev/null || { echo "bsdtar not found -- can't zip" >&2; exit 1; }
+  ( cd "$scratch" && bsdtar -a -cf "$out" -- * )
+
+  echo "Exported $(theme_label "$id"), accent $accent (#$ACCENT) -> $out"
+}
+
 main() {
   case "${1:-}" in
     list)    cmd_list ;;
     current) cmd_current ;;
     set)     cmd_set "${2:-}" ;;
     accent)  cmd_accent "${@:2}" ;;
+    export)  cmd_export "${2:-}" "${3:-}" "${4:-}" ;;
     apply)   apply ;;
     -h|--help|help) usage ;;
     *) usage 2 ;;

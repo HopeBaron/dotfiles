@@ -48,10 +48,13 @@ envsubst_vars() {
   echo "$out"
 }
 
+# Writes under $MARS_REPO by default -- the live, symlinked-into-$HOME config
+# -- but mars-theme-export points this at a scratch directory instead, to
+# render a theme that isn't the active one without touching anything live.
 render_file() {
-  local template=$1 output=$2 vars=$3
-  mkdir -p "$(dirname "$MARS_REPO/$output")"
-  envsubst "$vars" < "$TEMPLATES/$template" > "$MARS_REPO/$output"
+  local template=$1 output=$2 vars=$3 root=${MARS_RENDER_ROOT:-$MARS_REPO}
+  mkdir -p "$(dirname "$root/$output")"
+  envsubst "$vars" < "$TEMPLATES/$template" > "$root/$output"
   echo "  $output"
 }
 
@@ -76,12 +79,23 @@ render_gtk_theme() {
   render_file gtk-theme.css "$GTK_THEME_DIR/gtk-4.0/gtk.css" "$vars"
 }
 
-main() {
-  theme_activate
-  echo "Rendering $THEME_LABEL, accent $ACCENT_SPEC (#$ACCENT):"
+# Everything except theme_activate itself, so mars-theme-export can render an
+# arbitrary theme/accent (already loaded+derived) into MARS_RENDER_ROOT
+# without going through the saved state at all.
+render_all() {
   render_table "$(envsubst_vars)" "${RENDER_TABLE[@]}"
   render_table "$(envsubst_vars HOME)" "${RENDER_WITH_HOME_TABLE[@]}"
   render_gtk_theme
 }
 
-main "$@"
+main() {
+  theme_activate
+  echo "Rendering $THEME_LABEL, accent $ACCENT_SPEC (#$ACCENT):"
+  render_all
+}
+
+# Sourced by mars-theme-export to reuse these functions -- only run main when
+# executed directly.
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  main "$@"
+fi
