@@ -38,7 +38,12 @@ while :; do
     *) echo "usage: ${0##*/} [workspace|global]" >&2; exit 2 ;;
   esac
 
-  # address \t label, most-recently-focused first; the active window is marked.
+  # address \t label \t icon, most-recently-focused first; the active window
+  # is marked. The icon is just the window's own class/app-id, unresolved --
+  # rofi looks it up in the icon theme itself (config.rasi's show-icons), and
+  # a class like "firefox" or "org.kde.dolphin" already IS that app's icon
+  # name for any icon theme following freedesktop naming, so no lookup table
+  # is needed. A class that doesn't resolve just shows no icon for that row.
   mapfile -t rows < <(
     hyprctl clients -j | jq -r --argjson ws "$ws" --arg active "$active" "
       map(select(.mapped and (.hidden | not)))
@@ -49,23 +54,28 @@ while :; do
           title: (.title | if length > 70 then .[0:70] + \"…\" else . end)
         })
       | to_entries[]
-      | \"\(.value.address)\t\" + $label
+      | \"\(.value.address)\t\" + $label + \"\t\(.value.class)\"
     "
   )
 
   # Show the menu even with nothing to list -- an empty workspace should
   # still open, with an inert placeholder row, so Alt+a stays reachable
-  # instead of the whole thing silently doing nothing.
-  if [ "${#rows[@]}" -eq 0 ]; then
-    list="(no windows)"
-  else
-    list=$(printf '%s\n' "${rows[@]}" | cut -f2-)
-  fi
+  # instead of the whole thing silently doing nothing. Piped straight into
+  # rofi rather than built up in a `list=$(...)` variable first: the icon
+  # field below embeds a NUL byte, which command substitution silently
+  # drops, breaking every row's icon at once.
+  print_rows() {
+    if [ "${#rows[@]}" -eq 0 ]; then
+      printf '%s\n' "(no windows)"
+    else
+      printf '%s\n' "${rows[@]}" | awk -F'\t' '{ printf "%s\0icon\x1f%s\n", $2, $3 }'
+    fi
+  }
 
   # rofi exits non-zero for Escape (1) and for each -kb-custom-N (10+N-1);
   # `|| rc=$?` records that instead of letting `set -e` end the script.
   rc=0
-  choice=$(printf '%s\n' "$list" \
+  choice=$(print_rows \
     | rofi -dmenu -i -p "$prompt" \
            -mesg "<b>Enter</b> focus   <b>Alt+x</b> close   <b>Alt+Shift+x</b> force close   <b>Alt+a</b> $hint" \
            -kb-custom-1 "Alt+x" -kb-custom-2 "Alt+shift+x" -kb-custom-5 "Alt+a") || rc=$?
