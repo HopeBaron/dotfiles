@@ -15,10 +15,24 @@ fixed=JetBrainsMono Nerd Font,10,-1,5,400,0,0,0,0,0,0,0,0,0,0,1
 [Icons]
 Theme=${ICON_THEME}
 
-# No dimming/tinting of unfocused windows.
+# No dimming/tinting of unfocused windows in general (every multiplier below
+# is zeroed) -- except ChangeSelectionColor=true, which is NOT a dimming
+# effect: it's what tells KDE to compute a distinct QPalette::Inactive
+# Highlight/HighlightedText pair at all. With it false, an unfocused view's
+# "current" row (Dolphin's places sidebar is the visible case) still paints
+# its background at full ACCENT strength but keeps the plain (unselected)
+# foreground colour instead of the selected one -- fine on a saturated accent
+# where hue carries the contrast, but on this theme's grey accent it reads as
+# near-black text on a near-black background.
 [ColorEffects:Inactive]
-Enable=false
-ChangeSelectionColor=false
+Enable=true
+ChangeSelectionColor=true
+ColorEffect=0
+ColorAmount=0
+ContrastEffect=0
+ContrastAmount=0
+IntensityEffect=0
+IntensityAmount=0
 
 [Colors:View]
 BackgroundNormal=#${BG0}
