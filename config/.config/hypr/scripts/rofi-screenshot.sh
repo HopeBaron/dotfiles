@@ -56,12 +56,17 @@ done
 
 printf '%s\n' "$mode" > "$last_file"
 
-# "output" on its own still opens slurp to pick a monitor, which is a pointless
-# click on a single-head machine. hyprshot takes -m twice, and the second
-# "active" means "the monitor already focused" -- verified: without it the run
-# ends in "selection cancelled / invalid geometry" and writes nothing.
+# "output"/"window" on their own open an interactive picker (slurp for the
+# monitor, a click for the window) instead of using whatever's already
+# focused. That picker click is itself a focus change -- rofi (a layer-shell
+# surface, see rules.lua's "no-anim-rofi") held keyboard focus until it just
+# closed, so clicking a window to select it is a second, visible focus
+# change on top of that. hyprshot takes -m twice; the second "active" skips
+# the picker entirely and targets whatever's already focused -- the window
+# this menu was opened on top of, not whatever a stray click lands on.
+# region has no such picker-free mode; a drag is the whole point there.
 args=(-m "$mode")
-[ "$mode" = "output" ] && args+=(-m active)
+[ "$mode" = region ] || args+=(-m active)
 
 case "$rc" in
   0)  mkdir -p "$outdir"
