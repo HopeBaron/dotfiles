@@ -70,8 +70,21 @@ separator { background-color: #${BG3}; }
    "winning" by source order (verified: Remmina's toggled-on toolbar buttons
    rendered near-black on near-black from exactly this, before this fix). */
 
-*:selected, .view:selected, iconview:selected, treeview.view:selected,
-row:selected, flowboxchild:selected, placessidebar row:selected,
+/* :selected:focus variants alongside their plain :selected form: Adwaita
+   pairs almost every one of these with a :focus-augmented sibling of its own
+   (verified via gresource extract of the real gtk-contained-dark.css) that's
+   ONE pseudo-class more specific than a plain `:selected` -- so a selected
+   AND focused row (Remmina's connection list is one; it has keyboard focus
+   by default) matched Adwaita's own hardcoded blue (#15539e) no matter that
+   our rule comes later in the cascade, the same specificity trap as the
+   toggle-button fix above but on :focus instead of a compound class. */
+*:selected, *:selected:focus,
+.view:selected, .view:selected:focus,
+iconview:selected, iconview:selected:focus,
+treeview.view:selected, treeview.view:selected:focus,
+row:selected, row:selected:focus,
+flowboxchild:selected, flowboxchild:selected:focus,
+placessidebar row:selected, placessidebar row:selected:focus,
 textview text selection, entry selection, label selection {
   background-image: none;
   background-color: #${ACCENT};
