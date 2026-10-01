@@ -2,8 +2,8 @@
 # Screenshot menu. One interface, like the clipboard picker: the list picks the
 # mode, the footer keys pick the destination.
 #
-#   Enter  -> save to disk AND copy to the clipboard (hyprshot's default)
-#   Alt+c  -> copy to the clipboard only, nothing written to disk
+#   Enter  -> copy to the clipboard only, nothing written to disk
+#   Alt+c  -> save to disk AND copy to the clipboard (hyprshot's default)
 #
 # The mode used last is pre-selected, so a double-tap of Print repeats it.
 set -euo pipefail
@@ -29,7 +29,7 @@ for i in "${!modes[@]}"; do
   [ "${modes[$i]}" = "$last" ] && selected=$i
 done
 
-FOOTER='<b>Enter</b> save + copy   <b>Alt+c</b> copy only'
+FOOTER='<b>Enter</b> copy only   <b>Alt+c</b> save + copy'
 
 # rofi single-instances itself through a pidfile lock, so with a menu already
 # open a second one dies with "Rofi already running?" and Print looks dead.
@@ -69,8 +69,8 @@ args=(-m "$mode")
 [ "$mode" = region ] || args+=(-m active)
 
 case "$rc" in
-  0)  mkdir -p "$outdir"
+  0)  hyprshot "${args[@]}" --clipboard-only ;;
+  13) mkdir -p "$outdir"                          # kb-custom-4 = Alt+c
       hyprshot "${args[@]}" -o "$outdir" ;;
-  13) hyprshot "${args[@]}" --clipboard-only ;;   # kb-custom-4 = Alt+c
   *)  exit 0 ;;
 esac
