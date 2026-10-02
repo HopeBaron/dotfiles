@@ -23,11 +23,18 @@ notify() {
 # wallpapers directly makes menus visibly slow to open.
 #   thumbnail <image> [max-edge-px]
 thumbnail() {
-  local src=$1 size=${2:-512} out
+  local src=$1 size=${2:-512} out tmp
   out=$(thumbnail_path "$src" "$size")
   if [[ ! -s "$out" || "$src" -nt "$out" ]]; then
     mkdir -p "$(dirname "$out")"
-    magick "$src"'[0]' -auto-orient -thumbnail "${size}x${size}>" "$out" 2>/dev/null || return 1
+    # Same directory as $out, not /tmp: the final `mv` has to be a rename on
+    # the same filesystem to be atomic, and a killed `magick` must not leave
+    # a truncated file sitting at $out -- `[[ -s "$out" ]]` above would then
+    # treat that corrupt file as a validly cached thumbnail forever.
+    tmp="$out.tmp.$$"
+    magick "$src"'[0]' -auto-orient -thumbnail "${size}x${size}>" "$tmp" 2>/dev/null \
+      || { rm -f "$tmp"; return 1; }
+    mv -f "$tmp" "$out"
   fi
   echo "$out"
 }
