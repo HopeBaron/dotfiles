@@ -19,7 +19,7 @@
  *
  * Used as:  rofi -dmenu -theme preview ...
  */
-@import "gruvbox-material"
+@import "current-theme"
 
 /* The list stays compact (small per-row icon, ~650px worth of list); the
  * preview column is full-size, so the window is wider than a plain list

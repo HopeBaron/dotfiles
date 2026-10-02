@@ -72,7 +72,7 @@ apply_gsettings() {
   gsettings set $schema font-name 'Roboto 10'
   gsettings set $schema monospace-font-name 'JetBrainsMono Nerd Font 10'
   gsettings set $schema gtk-theme 'Adwaita'
-  gsettings set $schema gtk-theme 'Gruvbox-Material'
+  gsettings set $schema gtk-theme 'Current-Theme'
 }
 
 # KDE apps (Dolphin) re-read their colour scheme on this broadcast.

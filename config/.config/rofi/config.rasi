@@ -1,5 +1,7 @@
-/* rofi -- hand-written. Colours live in gruvbox-material.rasi (generated;
-   see theme/render.sh). Per-menu flags come from the scripts in
+/* rofi -- hand-written. Colours live in current-theme.rasi (generated;
+   see theme/render.sh -- that fixed filename holds whichever theme is
+   actually active, GruvMoon/mono-light/anything else included, not just
+   Gruvbox Material variants). Per-menu flags come from the scripts in
    ~/.config/hypr/scripts/, so nothing here pins a mode. */
 
 configuration {
@@ -23,4 +25,4 @@ configuration {
        rofi-theme-picker.sh), scoped to just that invocation. */
 }
 
-@theme "gruvbox-material"
+@theme "current-theme"

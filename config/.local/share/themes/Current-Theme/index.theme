@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=X-GNOME-Metatheme
-Name=Gruvbox-Material
+Name=Current-Theme
 Comment=Rendered from the active theme by theme/render.sh
 
 [X-GNOME-Metatheme]
-GtkTheme=Gruvbox-Material
+GtkTheme=Current-Theme
 IconTheme=Gruvbox-Plus-Dark

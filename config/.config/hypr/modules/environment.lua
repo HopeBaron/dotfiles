@@ -11,7 +11,7 @@ hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")
 
 -- GTK 4.22 ignores gtk-theme-name for plain (non-libadwaita) GTK4 apps such as
 -- pavucontrol; only this variable makes them load the rendered theme.
-hl.env("GTK_THEME", "Gruvbox-Material")
+hl.env("GTK_THEME", "Current-Theme")
 
 -- NVIDIA (proprietary driver) + wlroots hardware-cursor planes don't reliably
 -- release/reacquire across a VT switch: switching TTY away from an active

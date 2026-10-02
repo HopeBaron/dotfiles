@@ -125,7 +125,7 @@ deploy_configs() {
   # rendered .colors scheme; kdeglobals alone leaves it on Breeze Light.
   # dolphinrc is also Dolphin's state file, so it is set, not stowed.
   if command -v kwriteconfig6 >/dev/null; then
-    kwriteconfig6 --file dolphinrc --group UiSettings --key ColorScheme GruvboxMaterial
+    kwriteconfig6 --file dolphinrc --group UiSettings --key ColorScheme CurrentTheme
   fi
 }
 

@@ -11,24 +11,24 @@ set -euo pipefail
 . "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 readonly TEMPLATES="$MARS_THEME_DIR/templates"
-readonly GTK_THEME_DIR="config/.local/share/themes/Gruvbox-Material"
+readonly GTK_THEME_DIR="config/.local/share/themes/Current-Theme"
 
 # template                    -> output (relative to the repo root)
 readonly RENDER_TABLE=(
   "hypr-colors.lua            config/.config/hypr/colors.lua"
   "hyprlock.conf              config/.config/hypr/hyprlock.conf"
   "kitty-colors.conf          config/.config/kitty/colors.conf"
-  "rofi-theme.rasi            config/.config/rofi/gruvbox-material.rasi"
+  "rofi-theme.rasi            config/.config/rofi/current-theme.rasi"
   "waybar-config.jsonc        config/.config/waybar/config.jsonc"
   "waybar-style.css           config/.config/waybar/style.css"
   "swaync-style.css           config/.config/swaync/style.css"
   "swayosd-style.css          config/.config/swayosd/style.css"
   "yazi-theme.toml            config/.config/yazi/theme.toml"
-  "qt6ct-colors.conf          config/.config/qt6ct/colors/gruvbox-material.conf"
+  "qt6ct-colors.conf          config/.config/qt6ct/colors/current-theme.conf"
   "qt-tab-close.svg           config/.config/qt6ct/qss/tab-close.svg"
   "qt-tab-close-hover.svg     config/.config/qt6ct/qss/tab-close-hover.svg"
   "kdeglobals                 config/.config/kdeglobals"
-  "kdeglobals                 config/.local/share/color-schemes/GruvboxMaterial.colors"
+  "kdeglobals                 config/.local/share/color-schemes/CurrentTheme.colors"
   "gtk4-settings.ini          config/.config/gtk-4.0/settings.ini"
   "gtk4-libadwaita.css        config/.config/gtk-4.0/gtk.css"
   "sddm-theme.conf            system/sddm/theme/theme.conf"
@@ -39,7 +39,7 @@ readonly RENDER_TABLE=(
 # machine being themed.
 readonly RENDER_WITH_HOME_TABLE=(
   "qt6ct.conf                 config/.config/qt6ct/qt6ct.conf"
-  "qt-style.qss               config/.config/qt6ct/qss/gruvbox-material.qss"
+  "qt-style.qss               config/.config/qt6ct/qss/current-theme.qss"
 )
 
 envsubst_vars() {
