@@ -226,6 +226,13 @@ Rectangle {
         id: btn
         property string icon
         property string label
+        // Nerd Font glyphs (session/suspend/reboot/power) already carry
+        // right-side padding baked into the glyph itself;  (Font
+        // Awesome, a different font/codepoint range) doesn't, so its label
+        // sat right up against it with the same two-&nbsp; gap that looks
+        // fine on the others. Per-instance so only the keyboard button
+        // needs the wider gap.
+        property string gap: "&nbsp;&nbsp;"
         property color hoverColor: config.accent
         property bool active: false
         signal activated()
@@ -236,7 +243,7 @@ Rectangle {
         color: area.containsMouse || active ? hoverColor : config.fg0
         textFormat: Text.StyledText
         text: '<font face="' + config.iconFont + '">' + icon + '</font>'
-            + (label ? "&nbsp;&nbsp;" + label.replace(/&/g, "&amp;").replace(/</g, "&lt;") : "")
+            + (label ? gap + label.replace(/&/g, "&amp;").replace(/</g, "&lt;") : "")
         font { family: root.fontFamily; pixelSize: 13 }
         Behavior on color { ColorAnimation { duration: 150 } }
         MouseArea {
@@ -265,6 +272,30 @@ Rectangle {
             anchors.centerIn: parent
             height: parent.height
 
+            // Keyboard layout, same glyph as waybar's hyprland/language
+            // module. Always shown, even with a single layout -- the point
+            // is telling you what you're currently typing in, not just
+            // offering something to switch. Click cycles layouts (a no-op
+            // with only one), same as SUPER+space does once logged in.
+            IslandButton {
+                icon: ""
+                gap: "&nbsp;&nbsp;&nbsp;&nbsp;"
+                // keyboard.layouts holds layout objects (shortName/longName),
+                // not plain strings -- see SddmComponents/LayoutBox.qml,
+                // the reference for this API ("modelData.shortName").
+                // Calling .toUpperCase() on the object itself threw and left
+                // this blank; indexing .shortName first is what the actual
+                // text lives on.
+                label: keyboard.layouts.length > 0
+                    ? keyboard.layouts[keyboard.currentLayout].shortName.toUpperCase() : ""
+                onActivated: keyboard.currentLayout = (keyboard.currentLayout + 1) % keyboard.layouts.length
+            }
+            Rectangle {
+                width: 1
+                height: parent.height - 16
+                anchors.verticalCenter: parent.verticalCenter
+                color: root.tint(config.bg5, 0.7)
+            }
             IslandButton {
                 icon: "󰍹"
                 label: sessions.count > 0 ? sessions.itemAt(root.sessionIndex).name : ""

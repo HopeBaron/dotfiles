@@ -38,15 +38,23 @@
   },
 
 
-  // Seconds, as asked. Tooltip shows the month calendar.
+  // Date and time together, always -- no format-alt, so there's nothing to
+  // click-to-switch. Tooltip header repeats the same pair spelled out in
+  // full, above the month calendar, so the tooltip reads as one revamped
+  // view instead of a bare grid.
   "clock": {
-    "interval": 1,
+    "interval": 10,
     // No padding spaces in the format string: two leading spaces and none
     // trailing pushed the text off-centre inside the island. Padding is the
     // stylesheet's job (#clock), where it stays symmetric.
-    "format": "{:%H:%M:%S}",
-    "format-alt": "{:%a %d %b %Y}",
-    "tooltip-format": "<tt><small>{calendar}</small></tt>",
+    "format": "{:%a %d %b  %H:%M}",
+    // {0:...} twice, not two bare {:...} -- unindexed placeholders each
+    // claim the NEXT positional argument in fmt's scheme, but there's only
+    // one (the current time); a second bare {:...} looks for an argument
+    // that was never passed, throws, and silently blanks the whole tooltip
+    // -- which is why the calendar stopped showing up. {0:...} pins both to
+    // that same single argument instead.
+    "tooltip-format": "<span color='#${FG0}'><b>{0:%A, %d %B %Y}</b></span>  <span color='#${YELLOW}'>{0:%H:%M}</span>\n<tt><small>{calendar}</small></tt>",
     "calendar": {
       "mode": "month",
       "on-scroll": 1,
@@ -111,7 +119,7 @@
     "escape": true
   },
 
-  // Coffee-cup keep-awake toggle. Also bound to SUPER+SHIFT+`. "signal": 8
+  // Coffee-cup keep-awake toggle, click-only (no keybind). "signal": 8
   // matches caffeine.sh's `pkill -RTMIN+8 waybar`, so the icon updates the
   // instant either trigger fires instead of waiting for the next interval.
   "custom/caffeine": {

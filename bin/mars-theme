@@ -83,12 +83,26 @@ notify_kde_apps() {
 }
 
 # Running Neovim instances re-read the theme state (see nvim's mars/theme.lua).
+#
+# --remote-expr, not --remote-send: --remote-send *types* its string into
+# whatever that socket's current window is in, keystroke by keystroke. The
+# glob below matches any nvim socket, not just ones that loaded the mars
+# config, and if the target is mid-edit (say, a buffer sitting in Normal
+# mode) those "keystrokes" get interpreted as real commands and typed/saved
+# into whatever file is open there -- this is how editing this very file
+# once clobbered .gitignore (<Cmd> fell through to its literal characters
+# as motions/edits: "<" then "C" (change-to-eol) then "m" (mark) etc, ending
+# in "a ...<CR>" appending the rest of the string, then an autosave wrote it).
+# --remote-expr evaluates an expression on the target instead -- it never
+# touches a buffer no matter what that instance is doing -- and the pcall
+# keeps a socket whose nvim never loaded mars.theme from erroring out loud.
 reload_neovim() {
   command -v nvim >/dev/null || return 0
   local socket
   for socket in "${XDG_RUNTIME_DIR:-/tmp}"/nvim.*.0; do
     [[ -S "$socket" ]] || continue
-    nvim --server "$socket" --remote-send '<Cmd>lua require("mars.theme").apply()<CR>' \
+    nvim --server "$socket" --remote-expr \
+      'luaeval("pcall(function() require(\"mars.theme\").apply() end)")' \
       >/dev/null 2>&1 || true
   done
 }

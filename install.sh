@@ -7,6 +7,10 @@
 #
 #   ./install.sh              packages, theme, configs (stow), commands, SDDM
 #   ./install.sh --no-deploy  packages only: skip theme, stow, commands, SDDM
+#   ./install.sh --config-only  theme, stow, commands, SDDM only: skip the
+#                              system upgrade and package installs entirely
+#                              (for re-applying config changes, e.g. after
+#                              editing something under config/ or system/)
 #   ./install.sh --utils      also install packages/utils.txt
 #
 # Safe to re-run; every step is idempotent.
@@ -19,6 +23,7 @@ readonly DEFAULT_SESSION=/usr/share/wayland-sessions/hyprland-uwsm.desktop
 
 DEPLOY=1
 WITH_UTILS=0
+CONFIG_ONLY=0
 
 # ---- helpers -----------------------------------------------------------------
 
@@ -49,9 +54,10 @@ parse_args() {
   local arg
   for arg in "$@"; do
     case "$arg" in
-      --no-deploy) DEPLOY=0 ;;
-      --utils)     WITH_UTILS=1 ;;
-      -h|--help)   usage ;;
+      --no-deploy)   DEPLOY=0 ;;
+      --config-only) CONFIG_ONLY=1 ;;
+      --utils)       WITH_UTILS=1 ;;
+      -h|--help)     usage ;;
       *) echo "unknown option: $arg" >&2; usage 2 ;;
     esac
   done
@@ -184,18 +190,26 @@ switch_display_manager_to_sddm() {
   note "display manager: ${current:-none} -> sddm (from next boot)"
 }
 
+deploy_all() {
+  apply_theme
+  deploy_configs
+  link_commands
+  install_sddm
+}
+
 main() {
   parse_args "$@"
   check_not_root
+  if (( CONFIG_ONLY )); then
+    deploy_all
+    say "Done."
+    echo "Reboot and log in with 'Hyprland (uwsm-managed)' at the SDDM screen."
+    return
+  fi
   update_system
   install_all_packages
   enable_services
-  if (( DEPLOY )); then
-    apply_theme
-    deploy_configs
-    link_commands
-    install_sddm
-  fi
+  (( DEPLOY )) && deploy_all
   say "Done."
   echo "Reboot and log in with 'Hyprland (uwsm-managed)' at the SDDM screen."
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Keep-awake toggle ("caffeine"). SUPER+SHIFT+` and the waybar coffee-cup
-# module both call this. Backed by `systemd-inhibit --what=idle`, which
+# Keep-awake toggle ("caffeine"). Clicking the waybar coffee-cup module
+# calls this. Backed by `systemd-inhibit --what=idle`, which
 # hypridle honours automatically -- hypridle.conf never sets
 # ignore_dbus_inhibit/ignore_systemd_inhibit, so its default (false, i.e.
 # "do respect inhibitors") applies, and an active inhibit pauses every

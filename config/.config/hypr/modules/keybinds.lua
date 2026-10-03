@@ -31,8 +31,6 @@ bind(SUPER .. " + SHIFT + V",     run(scripts.clipboard),         "Clipboard his
 bind(SUPER .. " + period",        run(scripts.utilities),         "Utilities: wallpaper, theme, accent")
 bind(SUPER .. " + Escape",        run(scripts.power),             "Power menu")
 bind(SUPER .. " + N",             run("swaync-client -t -sw"),    "Notification centre")
-bind(SUPER .. " + grave",         run("hyprlock"),                "Lock screen")
-bind(SUPER .. " + SHIFT + grave", run(scripts.caffeine .. " toggle"), "Toggle keep-awake")
 bind(SUPER .. " + SHIFT + slash", run(scripts.help),              "This cheat sheet")
 bind("Print",                     run(scripts.screenshot),        "Screenshot menu")
 

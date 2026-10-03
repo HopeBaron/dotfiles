@@ -5,6 +5,9 @@
 #
 #   Enter  copy        Alt+p  pin / unpin
 #   Alt+d  delete      Alt+w  wipe history (pins are kept)
+#   Alt+q  toggle incognito -- while on, nothing is added to cliphist
+#          history; the menu just shows a note instead of the (now stale)
+#          list until it's turned back off
 #
 # Pins are copies kept outside cliphist ($PIN_DIR), so they survive a wipe:
 # <id>.bin (payload), <id>.mime, <id>.txt (the preview line shown in the menu).
@@ -15,13 +18,63 @@ set -euo pipefail
 readonly PIN_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/cliphist/pins"
 readonly IMAGE_CACHE="$MARS_CACHE_DIR/clipboard"
 readonly SEP=$'\x1f'   # field separator inside a row (ASCII unit separator)
-readonly FOOTER='<b>Enter</b> copy   <b>Alt+p</b> pin/unpin   <b>Alt+d</b> delete   <b>Alt+w</b> wipe'
+readonly FOOTER_BASE='<b>Enter</b> copy   <b>Alt+p</b> pin/unpin   <b>Alt+d</b> delete   <b>Alt+w</b> wipe'
 readonly PIN_ICON=$'\U000f0403'   # nf-md-pin, shown inline before a pinned entry's text
 
 # rofi exit codes: 0 Enter, 1 Esc, 10+N for -kb-custom-(N+1).
-readonly KEY_PIN=10 KEY_DELETE=11 KEY_WIPE=12
+readonly KEY_PIN=10 KEY_DELETE=11 KEY_WIPE=12 KEY_INCOGNITO=13
 
-mkdir -p "$PIN_DIR" "$IMAGE_CACHE"
+mkdir -p "$PIN_DIR" "$IMAGE_CACHE" "$MARS_STATE_DIR"
+
+# ---- incognito mode -----------------------------------------------------------
+
+# Off by default; persists across runs as a flag file (not a mars.sh concern,
+# so it's not there -- just this one script's own toggle).
+readonly INCOGNITO_FLAG="$MARS_STATE_DIR/clipboard-incognito"
+
+incognito_on() { [[ -e "$INCOGNITO_FLAG" ]]; }
+
+# autostart.lua runs these two, system-wide, for the life of the session, and
+# every clipboard change lands in cliphist history while they're up. Turning
+# incognito on kills them outright rather than pausing per-copy: nothing gets
+# recorded for as long as incognito stays on, no matter where the copy comes
+# from, and history is left stale (the menu just shows a note -- see main())
+# rather than paying to keep it current for a list nobody wants right now.
+# Turning it back off relaunches them and normal recording resumes.
+readonly -a WATCHER_TEXT_CMD=(wl-paste --type text --watch cliphist store)
+readonly -a WATCHER_IMAGE_CMD=(wl-paste --type image --watch cliphist store)
+
+toggle_incognito() {
+  if incognito_on; then
+    rm -f "$INCOGNITO_FLAG"
+    pgrep -f "wl-paste --type text --watch cliphist store" >/dev/null 2>&1 \
+      || setsid -f "${WATCHER_TEXT_CMD[@]}" >/dev/null 2>&1
+    pgrep -f "wl-paste --type image --watch cliphist store" >/dev/null 2>&1 \
+      || setsid -f "${WATCHER_IMAGE_CMD[@]}" >/dev/null 2>&1
+    notify clipboard "Incognito off" "History is recorded again"
+  else
+    : > "$INCOGNITO_FLAG"
+    pkill -f "wl-paste --type text --watch cliphist store" 2>/dev/null || true
+    pkill -f "wl-paste --type image --watch cliphist store" 2>/dev/null || true
+    notify clipboard "Incognito on" "Nothing is being recorded"
+  fi
+}
+
+# A single-row notice, shown instead of the (frozen) history list while
+# incognito is on. Enter or Alt+q turns it back off; Esc just leaves.
+incognito_notice() {
+  local rc=0
+  rofi -dmenu -i -format i -mesg "Incognito is on -- history isn't being recorded" \
+       -kb-custom-4 "Alt+q" <<<"Turn off incognito" >/dev/null || rc=$?
+  case "$rc" in
+    0|"$KEY_INCOGNITO") toggle_incognito ;;
+    *)                  exit 0 ;;
+  esac
+}
+
+footer() {
+  printf '%s   <b>Alt+q</b> incognito (off)' "$FOOTER_BASE"
+}
 
 # A temp file for pin()/copy_entry() to write into before an atomic rename.
 # Staged inside $PIN_DIR itself, not /tmp: `mv` is only atomic within one
@@ -300,6 +353,11 @@ wipe_history() {
 main() {
   local rows index rc row kind key
   while true; do
+    if incognito_on; then
+      incognito_notice
+      continue
+    fi
+
     read_current_clipboard
     rows=$(collect_rows)
     if [[ -z "$rows" ]]; then
@@ -309,10 +367,12 @@ main() {
 
     rc=0
     index=$(printf '%s\n' "$rows" | menu_lines |
-      rofi -dmenu -i -format i -theme preview -mesg "$FOOTER" \
-           -kb-custom-1 "Alt+p" -kb-custom-2 "Alt+d" -kb-custom-3 "Alt+w") || rc=$?
+      rofi -dmenu -i -format i -theme preview -mesg "$(footer)" \
+           -kb-custom-1 "Alt+p" -kb-custom-2 "Alt+d" -kb-custom-3 "Alt+w" \
+           -kb-custom-4 "Alt+q") || rc=$?
 
     if (( rc == KEY_WIPE )); then wipe_history; continue; fi
+    if (( rc == KEY_INCOGNITO )); then toggle_incognito; continue; fi
     [[ -n "$index" ]] || exit 0   # Esc
 
     row=$(printf '%s\n' "$rows" | sed -n "$((index + 1))p")
