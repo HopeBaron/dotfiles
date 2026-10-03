@@ -75,6 +75,41 @@ apply_gsettings() {
   gsettings set $schema gtk-theme 'Current-Theme'
 }
 
+# Firefox's accent and selection colours, as a marked block in every
+# profile's user.js (theme/templates/firefox-user.js). Profiles are found
+# through profiles.ini in both the XDG and the legacy location. The rest of
+# each user.js is left alone. Firefox reads user.js at start-up only, so a
+# running Firefox picks the colours up on its next start.
+readonly FIREFOX_BEGIN='// BEGIN mars-theme (generated; edit theme/templates/firefox-user.js)'
+readonly FIREFOX_END='// END mars-theme'
+
+apply_firefox() {
+  local root ini path dir block
+  block=$(envsubst '${ACCENT} ${ACCENT_FG} ${THEME_LABEL}' < "$REPO/theme/templates/firefox-user.js")
+  for root in "${XDG_CONFIG_HOME:-$HOME/.config}/mozilla/firefox" "$HOME/.mozilla/firefox"; do
+    ini="$root/profiles.ini"
+    [[ -r "$ini" ]] || continue
+    while IFS= read -r path; do
+      [[ "$path" == /* ]] && dir=$path || dir="$root/$path"
+      [[ -d "$dir" ]] || continue
+      firefox_write_block "$dir/user.js" "$block"
+    done < <(sed -n 's/^Path=//p' "$ini")
+  done
+}
+
+# Replaces the marked block in <user.js> (or appends it), keeping the rest.
+#   firefox_write_block <user.js> <block>
+firefox_write_block() {
+  local file=$1 block=$2 tmp
+  tmp=$(mktemp "$file.XXXXXX")
+  if [[ -f "$file" ]]; then
+    awk -v b="$FIREFOX_BEGIN" -v e="$FIREFOX_END" \
+      '$0 == b { skip = 1 } !skip { print } $0 == e { skip = 0 }' "$file" > "$tmp"
+  fi
+  printf '%s\n%s\n%s\n' "$FIREFOX_BEGIN" "$block" "$FIREFOX_END" >> "$tmp"
+  mv "$tmp" "$file"
+}
+
 # KDE apps re-read their colour scheme on this broadcast.
 notify_kde_apps() {
   command -v dbus-send >/dev/null || return 0
@@ -116,6 +151,7 @@ apply() {
   reload_kitty
   reload_swayosd
   apply_gsettings
+  apply_firefox
   notify_kde_apps
   reload_neovim
 }
