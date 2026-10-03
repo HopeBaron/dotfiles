@@ -30,3 +30,7 @@
 /config/.local/share/themes/Current-Theme/gtk-3.0/gtk.css
 /config/.local/share/themes/Current-Theme/gtk-4.0/gtk.css
 /system/sddm/theme/theme.conf
+
+# lazy.nvim's plugin lockfile: rewritten by every fresh install/update, so it
+# churns per machine instead of being a pin worth tracking.
+/config/.config/nvim/lazy-lock.json
