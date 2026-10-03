@@ -1,0 +1,20 @@
+/* Imported by userChrome.css and userContent.css in every Firefox profile
+ * (bin/mars-theme links it in). Static: AccentColor / AccentColorText are the
+ * system colours that the generated user.js block sets to the theme's accent.
+ *
+ * Firefox's design-system tokens only use AccentColor when it draws itself
+ * natively; its own UI and pages (about:newtab, about:preferences, ...) get
+ * hard-coded violet tokens instead, which no ui.* pref reaches. These point
+ * the tokens back at the system accent. !important: user-origin rules lose
+ * to Firefox's own (author-origin) ones otherwise.
+ *
+ * Scoped to Firefox's own documents, so websites are never touched. */
+@-moz-document url-prefix("chrome:"), url-prefix("about:") {
+  :root, :host {
+    --color-accent-primary: AccentColor !important;
+    --color-accent-primary-hover: color-mix(in srgb, black 10%, AccentColor) !important;
+    --color-accent-primary-active: color-mix(in srgb, black 20%, AccentColor) !important;
+    --color-accent-primary-selected: AccentColor !important;
+    --button-text-color-primary: AccentColorText !important;
+  }
+}

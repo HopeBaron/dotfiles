@@ -9,3 +9,7 @@ user_pref("ui.highlight", "#${ACCENT}");
 user_pref("ui.highlighttext", "#${ACCENT_FG}");
 user_pref("ui.selecteditem", "#${ACCENT}");
 user_pref("ui.selecteditemtext", "#${ACCENT_FG}");
+// Lets chrome/userChrome.css and userContent.css load: they import
+// theme/firefox/mars-accent.css, which points Firefox's own violet design
+// tokens (new tab, settings, its UI) back at the accent above.
+user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);

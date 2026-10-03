@@ -76,9 +76,11 @@ apply_gsettings() {
 }
 
 # Firefox's accent and selection colours, as a marked block in every
-# profile's user.js (theme/templates/firefox-user.js). Profiles are found
-# through profiles.ini in both the XDG and the legacy location. The rest of
-# each user.js is left alone. Firefox reads user.js at start-up only, so a
+# profile's user.js (theme/templates/firefox-user.js), plus the static CSS
+# that makes Firefox's own pages use that accent (theme/firefox/). Profiles are found
+# through profiles.ini in both the XDG and the legacy location. The block
+# goes first in each user.js and the rest is left alone, so the user's own
+# prefs below it win. Firefox reads user.js at start-up only, so a
 # running Firefox picks the colours up on its next start.
 readonly FIREFOX_BEGIN='// BEGIN mars-theme (generated; edit theme/templates/firefox-user.js)'
 readonly FIREFOX_END='// END mars-theme'
@@ -93,20 +95,42 @@ apply_firefox() {
       [[ "$path" == /* ]] && dir=$path || dir="$root/$path"
       [[ -d "$dir" ]] || continue
       firefox_write_block "$dir/user.js" "$block"
+      firefox_link_css "$dir"
     done < <(sed -n 's/^Path=//p' "$ini")
   done
 }
 
-# Replaces the marked block in <user.js> (or appends it), keeping the rest.
+# Links theme/firefox/mars-accent.css into <profile>/chrome/ and makes sure
+# userChrome.css and userContent.css import it, as their first line (where
+# @import has to be). Anything else in those files is left alone.
+#   firefox_link_css <profile-dir>
+readonly FIREFOX_CSS_IMPORT='@import "mars-accent.css"; /* mars-theme: theme/firefox/mars-accent.css */'
+
+firefox_link_css() {
+  local chrome="$1/chrome" file tmp
+  mkdir -p "$chrome"
+  ln -sfn "$REPO/theme/firefox/mars-accent.css" "$chrome/mars-accent.css"
+  for file in "$chrome/userChrome.css" "$chrome/userContent.css"; do
+    grep -qxF "$FIREFOX_CSS_IMPORT" "$file" 2>/dev/null && continue
+    tmp=$(mktemp "$file.XXXXXX")
+    printf '%s\n' "$FIREFOX_CSS_IMPORT" > "$tmp"
+    [[ -f "$file" ]] && cat "$file" >> "$tmp"
+    mv "$tmp" "$file"
+  done
+}
+
+# Writes the marked block as the first thing in <user.js> (replacing any
+# earlier copy), keeping the rest. First, because user.js applies in order:
+# any pref the user sets further down overrides ours.
 #   firefox_write_block <user.js> <block>
 firefox_write_block() {
   local file=$1 block=$2 tmp
   tmp=$(mktemp "$file.XXXXXX")
+  printf '%s\n%s\n%s\n' "$FIREFOX_BEGIN" "$block" "$FIREFOX_END" > "$tmp"
   if [[ -f "$file" ]]; then
     awk -v b="$FIREFOX_BEGIN" -v e="$FIREFOX_END" \
-      '$0 == b { skip = 1 } !skip { print } $0 == e { skip = 0 }' "$file" > "$tmp"
+      '$0 == b { skip = 1 } !skip { print } $0 == e { skip = 0 }' "$file" >> "$tmp"
   fi
-  printf '%s\n%s\n%s\n' "$FIREFOX_BEGIN" "$block" "$FIREFOX_END" >> "$tmp"
   mv "$tmp" "$file"
 }
 
