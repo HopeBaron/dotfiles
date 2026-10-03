@@ -31,6 +31,8 @@ bluez-utils                 # bluetoothctl, used by the bluetooth module
 cliphist                    # clipboard history store
 wl-clipboard                # wl-copy / wl-paste, used by cliphist
 imagemagick                 # thumbnails for the wallpaper/clipboard previews (lib/mars.sh)
+gvfs                        # Nautilus trash, network and device mounts
+xdg-desktop-portal-gtk      # file open/save dialogs (Nautilus's portal, GTK)
 nautilus                    # file manager, SUPER+E (GTK4, themed by gtk-4.0/gtk.css)
 file-roller                 # archive manager; Nautilus's compress/extract
 yazi                        # TUI file manager, SUPER+SHIFT+E

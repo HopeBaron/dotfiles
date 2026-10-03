@@ -2,10 +2,8 @@
 # present on this machine only because GNOME pulled it in; kept behind a flag
 # to test whether a from-scratch install works without it.
 
-xdg-desktop-portal-gtk      # file open/save dialogs (e.g. uploads in Firefox)
 gnome-keyring               # Secret Service: browser/VS Code/Wi-Fi passwords.
                             # Standalone daemon -- no GNOME desktop needed
 udisks2                     # mounting drives from Nautilus
-gvfs                        # trash, network mounts for GTK apps
 xdg-user-dirs               # ~/Documents, ~/Pictures, ... (screenshots use it)
 qt6-wayland                 # native Wayland for Qt6 apps instead of XWayland
