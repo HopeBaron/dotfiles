@@ -4,7 +4,7 @@ local scripts = os.getenv("HOME") .. "/.config/hypr/scripts"
 
 return {
     terminal       = "kitty",
-    file_manager   = "dolphin",
+    file_manager   = "nautilus",
     tui_file_manager = "kitty -e yazi", -- TUI, needs a terminal
 
     scripts = {

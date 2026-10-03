@@ -92,7 +92,7 @@ install_all_packages() {
     say "Installing packages/aur.txt (${#aur[@]} packages)"
     yay -S --needed --noconfirm "${aur[@]}"
   else
-    note "yay not found; skipping packages/aur.txt (app icons fall back to Breeze)."
+    note "yay not found; skipping packages/aur.txt (app icons fall back to Adwaita)."
   fi
 }
 
@@ -126,13 +126,6 @@ deploy_configs() {
   say "Linking configs into ~ with stow"
   stow --dir="$REPO" --target="$HOME" --restow config
   note "$REPO/config -> ~"
-
-  # Dolphin (KF6) takes its colours from its own setting, which names the
-  # rendered .colors scheme; kdeglobals alone leaves it on Breeze Light.
-  # dolphinrc is also Dolphin's state file, so it is set, not stowed.
-  if command -v kwriteconfig6 >/dev/null; then
-    kwriteconfig6 --file dolphinrc --group UiSettings --key ColorScheme CurrentTheme
-  fi
 }
 
 link_commands() {

@@ -64,7 +64,7 @@ brightness, so any colour stays readable.
 
 The choice is saved in `~/.local/state/mars/` and applied live to Hyprland,
 waybar, swaync, swayosd, kitty, rofi, GTK3 apps and running Neovim. Qt/KDE
-(Dolphin) and GTK4 apps pick it up on their next start. The SDDM login screen
+and GTK4 apps pick it up on their next start. The SDDM login screen
 is system-wide: re-run `./install.sh` to update it.
 
 ### Adding or changing colours
@@ -86,7 +86,7 @@ is system-wide: re-run `./install.sh` to update it.
 |---|---|
 | SUPER+Return | terminal (kitty) |
 | SUPER+R / SUPER+Tab | app launcher / window switcher |
-| SUPER+E / SUPER+SHIFT+E | Dolphin / yazi |
+| SUPER+E / SUPER+SHIFT+E | Nautilus / yazi |
 | SUPER+SHIFT+V | clipboard history (image preview, pins) |
 | SUPER+. | wallpaper, theme, accent |
 | SUPER+Escape | power menu |

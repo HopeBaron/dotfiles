@@ -75,7 +75,7 @@ apply_gsettings() {
   gsettings set $schema gtk-theme 'Current-Theme'
 }
 
-# KDE apps (Dolphin) re-read their colour scheme on this broadcast.
+# KDE apps re-read their colour scheme on this broadcast.
 notify_kde_apps() {
   command -v dbus-send >/dev/null || return 0
   dbus-send --session --type=signal /KGlobalSettings \

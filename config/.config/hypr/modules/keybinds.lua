@@ -23,7 +23,7 @@ local function run(command) return hl.dsp.exec_cmd(command) end
 -- ---- apps and menus ---------------------------------------------------------
 
 bind(SUPER .. " + Return",        run(programs.terminal),         "Terminal")
-bind(SUPER .. " + E",             run(programs.file_manager),     "File manager (Dolphin)")
+bind(SUPER .. " + E",             run(programs.file_manager),     "File manager (Nautilus)")
 bind(SUPER .. " + SHIFT + E",     run(programs.tui_file_manager), "File manager (yazi)")
 bind(SUPER .. " + R",             run(scripts.launcher),          "App launcher")
 bind(SUPER .. " + Tab",           run(scripts.windows),           "Windows")
