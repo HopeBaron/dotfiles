@@ -74,11 +74,15 @@ while :; do
 
   # rofi exits non-zero for Escape (1) and for each -kb-custom-N (10+N-1);
   # `|| rc=$?` records that instead of letting `set -e` end the script.
+  # Shifted keys are bound by the keysym they produce: Shift+x arrives as
+  # "X", so a binding spelled "Alt+shift+x" never matches and the key falls
+  # through to the filter as text. Both spellings are listed in case a
+  # layout reports it the other way.
   rc=0
   choice=$(print_rows \
     | rofi -dmenu -i -p "$prompt" \
            -mesg "<b>Enter</b> focus   <b>Alt+x</b> close   <b>Alt+Shift+x</b> force close   <b>Alt+a</b> $hint" \
-           -kb-custom-1 "Alt+x" -kb-custom-2 "Alt+shift+x" -kb-custom-5 "Alt+a") || rc=$?
+           -kb-custom-1 "Alt+x" -kb-custom-2 "Alt+X,Alt+Shift+X" -kb-custom-5 "Alt+a") || rc=$?
 
   if [ "$rc" -eq "$KEY_SCOPE" ]; then
     [ "$scope" = workspace ] && scope=global || scope=workspace
