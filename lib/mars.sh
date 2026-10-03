@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Shared paths and helpers for bin/ and the menu scripts in
-# config/.config/hypr/scripts/. Source it; it defines nothing that runs.
+# config/.config/hypr/scripts/. Source it; apart from creating the state and
+# cache dirs below, it defines nothing that runs.
 
 # The repo, found from this file's real location -- scripts reach it through
 # stow symlinks, so their own path would point into ~/.config instead.
@@ -10,6 +11,10 @@ MARS_WALLPAPER_DIR="$MARS_REPO/wallpapers"
 
 MARS_STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/mars"   # choices that persist
 MARS_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/mars"          # safe to delete
+
+# Created up front so no script can trip over a missing dir on a fresh
+# install -- the first-login hyprpaper failure was exactly that.
+mkdir -p "$MARS_STATE_DIR" "$MARS_CACHE_DIR"
 
 # Desktop notification; a no-op where notify-send isn't installed.
 #   notify <app-name> <summary> [body]
