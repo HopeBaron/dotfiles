@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Window switcher: list open windows and focus the chosen one.
 #
-# One menu instead of two binds: starts on the active workspace, Alt+a
-# toggles to every window (tagged with its workspace) and back, so switching
+# One menu instead of two binds: starts on every window (tagged with its
+# workspace), Alt+a toggles to just the active workspace's and back, so switching
 # scope never means pressing a different key combo, just a footer action --
 # same shape as the clipboard and screenshot menus. Alt+x / Alt+Shift+x close
 # or force-close the highlighted window (same two dispatchers as the SUPER+X
@@ -15,7 +15,7 @@ set -euo pipefail
 # rofi exit codes for this script's own -kb-custom-N (10 + N - 1).
 readonly KEY_CLOSE=10 KEY_KILL=11 KEY_SCOPE=14
 
-scope=${1:-workspace}   # workspace | global -- starting scope; Alt+a toggles it
+scope=${1:-global}   # global | workspace -- starting scope; Alt+a toggles it
 
 while :; do
   active=$(hyprctl activewindow -j | jq -r '.address // empty')
@@ -35,7 +35,7 @@ while :; do
       label='"\(.key + 1)  \(.value.mark)[\(.value.workspace.name)] \(.value.class)  ·  \(.value.title)"'
       hint="this workspace"
       ;;
-    *) echo "usage: ${0##*/} [workspace|global]" >&2; exit 2 ;;
+    *) echo "usage: ${0##*/} [global|workspace]" >&2; exit 2 ;;
   esac
 
   # address \t label \t icon, most-recently-focused first; the active window
