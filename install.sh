@@ -144,7 +144,9 @@ deploy_configs() {
   # --restow without --adopt: stow refuses to overwrite real files already in
   # ~/.config, so moving them aside is a conscious step, never data loss.
   say "Linking configs into ~ with stow"
-  stow --dir="$REPO" --target="$HOME" --restow config
+  # --no-folding: on a fresh system, folding would link whole directories
+  # (e.g. ~/.local, which then holds every app's data) into the repo.
+  stow --dir="$REPO" --target="$HOME" --no-folding --restow config
   note "$REPO/config -> ~"
 }
 
