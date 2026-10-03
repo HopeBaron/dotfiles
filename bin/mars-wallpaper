@@ -71,6 +71,10 @@ wallpaper {
 CONF
   if pgrep -x hyprpaper >/dev/null; then
     hyprctl hyprpaper wallpaper ",$path,cover" >/dev/null
+  elif [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
+    # Not running (e.g. it exited at login before any wallpaper was set):
+    # start it, and it picks up the state file just written.
+    setsid -f hyprpaper >/dev/null 2>&1
   fi
 }
 

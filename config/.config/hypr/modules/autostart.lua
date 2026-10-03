@@ -11,7 +11,9 @@ hl.on("hyprland.start", function()
     -- instead of silently falling back to the default layout.
     hl.exec_cmd("hyprpm reload -n && hyprctl reload")
 
-    hl.exec_cmd("hyprpaper")      -- wallpaper
+    -- hyprpaper exits on a missing `source =` file, which is the case until
+    -- a wallpaper is first chosen; an empty one just means "no wallpaper".
+    hl.exec_cmd("mkdir -p ~/.local/state/mars && touch ~/.local/state/mars/wallpaper.conf && hyprpaper") -- wallpaper
     hl.exec_cmd("waybar")         -- top bar
     hl.exec_cmd("swaync")         -- notifications + notification centre
     hl.exec_cmd("hypridle")       -- idle: dim -> lock -> suspend

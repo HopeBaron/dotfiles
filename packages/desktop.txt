@@ -1,6 +1,9 @@
 # The Hyprland desktop itself. Grows as components are added.
 hyprland
-hyprpm                      # Hyprland's own plugin manager
+hyprpm                      # Hyprland's own plugin manager; builds hy3 (install.sh)
+cmake                       # hyprpm: builds the Hyprland headers and plugins
+meson
+cpio
 uwsm                        # session manager: keeps launched apps in the login
                             # session's cgroup, not user@.service. Log in via the
                             # SDDM entry "Hyprland (uwsm-managed)", not plain "Hyprland".

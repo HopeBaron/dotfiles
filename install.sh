@@ -5,7 +5,7 @@
 # system, the NVIDIA driver and the audio/network services, so none of that
 # is repeated here. Its display manager (GDM) is swapped for a themed SDDM.
 #
-#   ./install.sh              packages, theme, configs (stow), commands, SDDM
+#   ./install.sh              packages, hy3, theme, configs (stow), commands, SDDM
 #   ./install.sh --no-deploy  packages only: skip theme, stow, commands, SDDM
 #   ./install.sh --config-only  theme, stow, commands, SDDM only: skip the
 #                              system upgrade and package installs entirely
@@ -111,6 +111,26 @@ enable_services() {
   fi
 }
 
+# hy3 (the i3-style tiling layout modules/appearance.lua selects) is not in
+# the repos; hyprpm builds it against the installed Hyprland's headers. Runs
+# after the system upgrade so a new Hyprland gets matching headers and a
+# rebuilt plugin. Not fatal: without hy3, Hyprland falls back to dwindle.
+readonly HY3_URL=https://github.com/kociap/hy3
+
+install_hyprland_plugins() {
+  say "Building the hy3 plugin with hyprpm"
+  # hyprpm asks for confirmation (and sudo, for the headers) as it goes;
+  # `< <(yes)` answers the prompts without a pipe, which pipefail would trip
+  # on when `yes` is killed by SIGPIPE.
+  if ! hyprpm update < <(yes) \
+     || { ! grep -q 'Plugin hy3' < <(hyprpm list) && ! hyprpm add "$HY3_URL" < <(yes); } \
+     || ! hyprpm enable hy3; then
+    note "hyprpm failed; log into Hyprland and re-run ./install.sh to retry."
+    return 0
+  fi
+  note "hy3 enabled; autostart.lua loads it at every login."
+}
+
 # Renders every themed config for the saved (or default) theme and pushes it
 # to GTK/Qt/running apps. Must run before stow: the rendered files are what
 # gets linked.
@@ -202,6 +222,7 @@ main() {
   update_system
   install_all_packages
   enable_services
+  install_hyprland_plugins
   (( DEPLOY )) && deploy_all
   say "Done."
   echo "Reboot and log in with 'Hyprland (uwsm-managed)' at the SDDM screen."
