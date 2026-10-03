@@ -170,13 +170,13 @@ install_sddm() {
   sudo install -Dm644 -t "$SDDM_THEME_DIR" "$REPO"/system/sddm/theme/*
   sudo install -Dm644 -t /etc/sddm.conf.d "$REPO"/system/sddm/sddm.conf.d/*
 
-  # Same wallpaper as the desktop. Re-run ./install.sh after changing it.
+  # The background is each user's own wallpaper, read live from their home
+  # (see Main.qml); re-applying the current one sets up the link and the
+  # read access for it -- mars-wallpaper keeps both up to date from then on.
   local wallpaper
   wallpaper=$("$REPO/bin/mars-wallpaper" current)
   if [[ -f "$wallpaper" ]]; then
-    local ext=${wallpaper##*.}
-    sudo install -m644 "$wallpaper" "$SDDM_THEME_DIR/background.$ext"
-    sudo sed -i "s|^background=.*|background=background.$ext|" "$SDDM_THEME_DIR/theme.conf"
+    "$REPO/bin/mars-wallpaper" apply "$wallpaper"
   else
     note "no wallpaper set yet; the login screen uses the theme's plain background."
   fi

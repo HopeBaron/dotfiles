@@ -16,7 +16,8 @@
 #
 # The live wallpaper lives in ~/.local/state/mars/wallpaper.conf, which
 # config/.config/hypr/hyprpaper.conf sources -- so switching never edits a
-# tracked file. A theme you have explicitly given a wallpaper remembers it in
+# tracked file. ~/.local/state/mars/current-wallpaper links to the image for
+# the login screen, which shows each user's own wallpaper. A theme you have explicitly given a wallpaper remembers it in
 # ~/.local/state/mars/themes/<id>.env (see theme/lib.sh) and restores it
 # whenever you switch back; an untouched theme just keeps whatever is
 # already showing.
@@ -27,6 +28,10 @@ REPO=$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)
 . "$REPO/theme/lib.sh"   # also brings in lib/mars.sh (MARS_WALLPAPER_DIR, ...)
 
 readonly STATE_FILE="$MARS_STATE_DIR/wallpaper.conf"
+# Link to the current wallpaper image, read by the login screen (SDDM's
+# Main.qml) from the home of whichever user is selected there.
+readonly GREETER_LINK="$MARS_STATE_DIR/current-wallpaper"
+readonly GREETER_USER=sddm
 readonly IMAGE_PATTERN='.*\.(jpe?g|png|webp)$'
 
 usage() {
@@ -55,6 +60,33 @@ resolve() {
   fi
 }
 
+# Lets the login screen read <path> through $GREETER_LINK. The greeter runs
+# as the sddm user, and ~ is 0700, so it gets ACL entries -- the same thing
+# SDDM's own docs do for ~/.face.icon: search (x, not list) on each of our
+# own directories on the way to the link and to the image, and read on the
+# image. Nothing needs root: these are all files we own. An image we don't
+# own (outside ~) is left as it is; it's usually world-readable already.
+share_with_greeter() {
+  local path=$1 old dir
+  command -v setfacl >/dev/null && getent passwd "$GREETER_USER" >/dev/null || return 0
+
+  # The previous image no longer needs to be readable.
+  old=$(readlink "$GREETER_LINK" 2>/dev/null || true)
+  if [[ -n "$old" && "$old" != "$path" && -O "$old" ]]; then
+    setfacl -x "u:$GREETER_USER" "$old" 2>/dev/null || true
+  fi
+
+  ln -sfn "$path" "$GREETER_LINK"
+  [[ -O "$path" ]] && { setfacl -m "u:$GREETER_USER:r" "$path" || true; }
+  for dir in "$(dirname "$path")" "$MARS_STATE_DIR"; do
+    while [[ "$dir" != / ]]; do
+      [[ -O "$dir" ]] && { setfacl -m "u:$GREETER_USER:x" "$dir" || true; }
+      dir=$(dirname "$dir")
+    done
+  done
+  return 0   # the loops end on a false [[ -O ]], e.g. for /home
+}
+
 # Makes <path> the live wallpaper: writes the state file hyprpaper.conf
 # sources, and nudges a running hyprpaper over IPC. Does not touch any
 # theme's own remembered choice -- see cmd_set for that.
@@ -69,6 +101,7 @@ wallpaper {
     fit_mode = cover
 }
 CONF
+  share_with_greeter "$path"
   if pgrep -x hyprpaper >/dev/null; then
     hyprctl hyprpaper wallpaper ",$path,cover" >/dev/null
   elif [[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then

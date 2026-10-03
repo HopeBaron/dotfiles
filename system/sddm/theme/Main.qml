@@ -33,6 +33,20 @@ Rectangle {
     // Invisible mirror of the session model, so names can be read by index.
     Repeater { id: sessions; model: sessionModel; delegate: Item { required property string name } }
 
+    // Same for users, to find the home of whoever is typed or picked.
+    Repeater {
+        id: users
+        model: userModel
+        delegate: Item { required property string name; required property string homeDir }
+    }
+    function homeOf(name) {
+        for (let i = 0; i < users.count; i++) {
+            const u = users.itemAt(i)
+            if (u && u.name === name) return u.homeDir
+        }
+        return ""
+    }
+
     Connections {
         target: sddm
         function onLoginFailed() {
@@ -43,11 +57,15 @@ Rectangle {
         }
     }
 
-    // Wallpaper, blurred like hyprlock's `blur_passes = 3, blur_size = 7`.
+    // The selected user's own wallpaper, blurred like hyprlock's
+    // `blur_passes = 3, blur_size = 7`. mars-wallpaper keeps the link up to
+    // date and lets this greeter (the sddm user) read it; a user without one
+    // just gets the plain bg0 behind.
     Image {
         id: wallpaper
         anchors.fill: parent
-        source: config.background ? Qt.resolvedUrl(config.background) : ""
+        readonly property string home: root.homeOf(username.text)
+        source: home ? "file://" + home + "/.local/state/mars/current-wallpaper" : ""
         fillMode: Image.PreserveAspectCrop
         visible: false
     }
