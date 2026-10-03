@@ -235,3 +235,46 @@ scrollbar slider:active   { background-image: none; background-color: #${ACCENT}
 
 *:link, link, button.link { color: #${ACCENT}; }
 rubberband, .rubberband   { background-image: none; background-color: alpha(#${ACCENT}, 0.2); border: 1px solid #${ACCENT}; }
+
+/* ---------- unfocused windows (:backdrop) ---------- */
+
+/* Adwaita repeats its accent-coloured states with :backdrop for a window
+   that has lost focus, each one pseudo-class more specific than the rules
+   above, with its blue (#3584e4) baked in as a background-image -- so an
+   unfocused dialog (LibreOffice's print dialog, with the pointer elsewhere)
+   showed blue checkboxes and a blue Print button. One override per Adwaita
+   rule that uses that blue (verified against the extracted
+   gtk-contained.css), same accent as the focused state. */
+check:checked:backdrop, radio:checked:backdrop,
+check:indeterminate:backdrop, radio:indeterminate:backdrop {
+  background-image: none;
+  background-color: #${ACCENT};
+  border-color: #${ACCENT};
+  color: #${ACCENT_FG};
+}
+check:backdrop, radio:backdrop { background-image: none; background-color: #${BG1}; }
+
+switch:backdrop:checked { background-image: none; background-color: #${ACCENT}; border-color: #${ACCENT}; }
+
+button.suggested-action:backdrop,
+button.suggested-action:backdrop:active, button.suggested-action:backdrop:checked {
+  background-image: none;
+  background-color: #${ACCENT};
+  border-color: #${ACCENT};
+  color: #${ACCENT_FG};
+}
+button.suggested-action.flat:backdrop { background-image: none; background-color: transparent; color: #${ACCENT}; }
+
+progressbar progress:backdrop, scale highlight:backdrop,
+levelbar block.high:backdrop, levelbar block:not(.empty):backdrop {
+  background-image: none;
+  background-color: #${ACCENT};
+  border-color: #${ACCENT};
+}
+
+row.activatable:selected:backdrop,
+treeview.view.progressbar:selected:backdrop, treeview.view.progressbar:selected:focus:backdrop {
+  background-image: none;
+  background-color: #${ACCENT};
+  color: #${ACCENT_FG};
+}
