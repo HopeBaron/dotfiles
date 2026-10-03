@@ -4,8 +4,9 @@
  * libadwaita draws every widget from named colours, so overriding them is the
  * supported way to recolour it. libadwaita >= 1.6 reads the CSS variables; the
  * @define-color names are kept for GTK4 apps that still use the old ones.
- * Only colours here -- no widget rules -- so non-libadwaita GTK4 apps that
- * load this file too (swaync is one) keep their own styling.
+ * Only colours here -- one rubberband rule at the end aside, no widget rules
+ * -- so non-libadwaita GTK4 apps that load this file too (swaync is one)
+ * keep their own styling.
  */
 
 :root {
@@ -76,3 +77,14 @@
 @define-color dialog_fg_color       #${FG0};
 @define-color popover_bg_color      #${BG1};
 @define-color popover_fg_color      #${FG0};
+
+/* The one widget rule here. Nautilus's own stylesheet swaps in a grey
+ * --accent-bg-color on its file views (.nautilus-grid-view gridview etc.),
+ * which the drag-select box inherits instead of the accent above -- and it
+ * came out libadwaita's blue. This file outranks an app's own stylesheet, so
+ * naming the colours directly wins. Harmless elsewhere: only list/grid views
+ * have a rubberband. */
+rubberband {
+  border: 1px solid #${ACCENT};
+  background-color: alpha(#${ACCENT}, 0.2);
+}
