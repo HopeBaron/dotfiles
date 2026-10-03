@@ -143,6 +143,7 @@ button.flat, headerbar button.flat, .path-bar button:not(:checked) {
 button.flat:hover, .path-bar button:hover:not(:checked) { background-image: none; background-color: alpha(#${BG3}, 0.6); }
 button.destructive-action               { background-image: none; background-color: #${RED};   color: #${BG0}; }
 button.suggested-action                 { background-image: none; background-color: #${ACCENT}; color: #${ACCENT_FG}; }
+button.suggested-action:hover           { background-image: none; background-color: alpha(#${ACCENT}, 0.85); color: #${ACCENT_FG}; }
 
 /* ---------- inputs ---------- */
 

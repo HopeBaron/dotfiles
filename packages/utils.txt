@@ -2,6 +2,7 @@
 # present on this machine only because GNOME pulled it in; kept behind a flag
 # to test whether a from-scratch install works without it.
 
+xdg-desktop-portal-gtk      # file open/save dialogs (e.g. uploads in Firefox)
 gnome-keyring               # Secret Service: browser/VS Code/Wi-Fi passwords.
                             # Standalone daemon -- no GNOME desktop needed
 udisks2                     # mounting drives from Dolphin
