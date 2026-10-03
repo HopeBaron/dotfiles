@@ -23,6 +23,17 @@ notify() {
   notify-send -a "$1" "$2" "${3:-}" || true
 }
 
+# A user dir (PICTURES, VIDEOS, ...) from xdg-user-dirs, or <fallback> when
+# that isn't installed or the dir isn't configured -- xdg-user-dir prints
+# $HOME itself for an unconfigured one.
+#   user_dir <XDG-NAME> <fallback>
+user_dir() {
+  local dir=""
+  command -v xdg-user-dir >/dev/null && dir=$(xdg-user-dir "$1" 2>/dev/null || true)
+  [[ -n "$dir" && "$dir" != "$HOME" ]] || dir=$2
+  echo "$dir"
+}
+
 # Path to a cached, downscaled copy of an image, (re)made when the source is
 # newer. rofi decodes icons at full size, so previewing multi-megapixel
 # wallpapers directly makes menus visibly slow to open.

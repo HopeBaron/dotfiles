@@ -92,5 +92,5 @@ is system-wide: re-run `./install.sh` to update it.
 | SUPER+Escape | power menu |
 | SUPER+` / SUPER+SHIFT+` | lock / keep-awake |
 | SUPER+N | notification centre |
-| Print | screenshot menu |
+| Print | screenshot / screen-recording menu |
 | SUPER+1…0 | workspaces |

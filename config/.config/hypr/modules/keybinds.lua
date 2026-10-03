@@ -32,7 +32,7 @@ bind(SUPER .. " + period",        run(scripts.utilities),         "Utilities: wa
 bind(SUPER .. " + Escape",        run(scripts.power),             "Power menu")
 bind(SUPER .. " + N",             run("swaync-client -t -sw"),    "Notification centre")
 bind(SUPER .. " + SHIFT + slash", run(scripts.help),              "This cheat sheet")
-bind("Print",                     run(scripts.screenshot),        "Screenshot menu")
+bind("Print",                     run(scripts.screenshot),        "Screenshot / recording menu")
 
 -- ---- windows ----------------------------------------------------------------
 
