@@ -8,6 +8,6 @@ ttf-roboto                  # UI text: waybar, rofi, swaync, hyprlock, SDDM, Qt.
 ttf-jetbrains-mono-nerd     # code: kitty, nvim, Qt's fixed font, the rofi
                             # keybind sheet (its columns need monospace). Its
                             # "Propo" variant is the icon font behind Roboto.
-noto-fonts                  # Noto Sans Arabic, chained behind Roboto by
+noto-fonts                  # Noto Sans Arabic UI, chained behind Roboto by
                             # config/.config/fontconfig; fallback for the rest
 noto-fonts-emoji            # colour emoji fallback
