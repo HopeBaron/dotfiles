@@ -241,13 +241,11 @@ record_start() {
     notify "Screen recorder" "Recording failed to start" "$(tail -n 3 "$LOG_FILE")"
     return 1
   fi
-  notify "Screen recorder" "Recording started" "Press Print to stop"
 }
 
 record_stop() {
-  local pid file
+  local pid
   pid=$(recording_pid) || return 0
-  file=$(sed -n 2p "$PID_FILE")
   # SIGINT, not TERM: gpu-screen-recorder finalizes the file on it.
   kill -INT "$pid"
   for _ in {1..50}; do
@@ -255,7 +253,6 @@ record_stop() {
     sleep 0.1
   done
   rm -f "$PID_FILE"
-  notify "Screen recorder" "Recording saved" "$file"
 }
 
 # ---- menu -------------------------------------------------------------------

@@ -96,9 +96,9 @@ screenshot() {
   if (( rc == KEY_SAVE )); then
     outdir="$(user_dir PICTURES "$HOME/Pictures")/Screenshots"
     mkdir -p "$outdir"
-    hyprshot "${args[@]}" -o "$outdir"
+    hyprshot "${args[@]}" -o "$outdir" --silent
   else
-    hyprshot "${args[@]}" --clipboard-only
+    hyprshot "${args[@]}" --clipboard-only --silent
   fi
 }
 

@@ -27,12 +27,10 @@ toggle() {
   if is_active; then
     kill "$(cat "$PID_FILE")" 2>/dev/null || true
     rm -f "$PID_FILE"
-    notify-send -a caffeine "Caffeine off" "Idle timeouts restored" 2>/dev/null || true
   else
     setsid systemd-inhibit --what=idle --who="Caffeine" \
       --why="Manually kept awake" sleep infinity &
     echo $! > "$PID_FILE"
-    notify-send -a caffeine "Caffeine on" "Screen will stay awake" 2>/dev/null || true
   fi
   # Nudges waybar's custom/caffeine module to re-run its exec immediately
   # instead of waiting for its next interval.

@@ -37,10 +37,6 @@ usage() {
   exit "${1:-0}"
 }
 
-notify() {
-  command -v notify-send >/dev/null && notify-send -a theme "$@" || true
-}
-
 running() { pgrep -x "$1" >/dev/null; }
 
 # ---- pushing a freshly rendered theme into running apps ----------------------
@@ -214,8 +210,6 @@ cmd_set() {
   local wallpaper
   wallpaper=$(theme_get_wallpaper "$id")
   [[ -n "$wallpaper" ]] && "$REPO/bin/mars-wallpaper" apply "$wallpaper" >/dev/null 2>&1
-
-  notify "Theme: $(theme_label "$id")" "Restart open Qt/KDE and GTK4 apps to pick it up everywhere"
 }
 
 # Sets (or resets) the accent for one or more themes. With no theme-id, only
@@ -229,7 +223,7 @@ cmd_accent() {
   state_load   # THEME = current theme, for the "is it among the targets?" check
   (( ${#targets[@]} == 0 )) && targets=("$THEME")
 
-  local spec applied=0
+  local spec
   if [[ "$spec_arg" == reset ]]; then
     for id in "${targets[@]}"; do theme_reset_accent "$id"; done
     spec=$MARS_DEFAULT_ACCENT
@@ -245,18 +239,9 @@ cmd_accent() {
     if [[ "$id" == "$THEME" ]]; then
       state_save "$THEME" "$spec"
       apply
-      applied=1
       break
     fi
   done
-
-  if (( ${#targets[@]} > 1 )); then
-    notify "Accent: $spec" "Applied to ${#targets[@]} themes"
-  elif (( applied )); then
-    notify "Accent: $spec"
-  else
-    notify "Accent: $spec" "Saved for ${targets[0]}; switch to it to see it"
-  fi
 }
 
 cmd_export() {

@@ -51,12 +51,10 @@ toggle_incognito() {
       || setsid -f "${WATCHER_TEXT_CMD[@]}" >/dev/null 2>&1
     pgrep -f "wl-paste --type image --watch cliphist store" >/dev/null 2>&1 \
       || setsid -f "${WATCHER_IMAGE_CMD[@]}" >/dev/null 2>&1
-    notify clipboard "Incognito off" "History is recorded again"
   else
     : > "$INCOGNITO_FLAG"
     pkill -f "wl-paste --type text --watch cliphist store" 2>/dev/null || true
     pkill -f "wl-paste --type image --watch cliphist store" 2>/dev/null || true
-    notify clipboard "Incognito on" "Nothing is being recorded"
   fi
 }
 
@@ -295,7 +293,6 @@ unpin() {
   rm -f "$PIN_DIR/$id.txt"   # first: this is what makes a pin "exist" in the menu
   rm -f "$PIN_DIR/$id".{bin,mime}
   _remove_pin_thumbnail "$id"
-  notify clipboard "Unpinned" "Kept in history"
 }
 
 pin() {
@@ -305,7 +302,6 @@ pin() {
   id=$(sha256sum "$tmp" | cut -c1-12)
   if [[ -e "$PIN_DIR/$id.bin" ]]; then
     rm -f "$tmp"
-    notify clipboard "Already pinned"
     return
   fi
   mv -f "$tmp" "$PIN_DIR/$id.bin"
@@ -315,7 +311,6 @@ pin() {
   _new_tmp; txt_tmp=$_LAST_TMP
   printf '%s' "${line#*$'\t'}" > "$txt_tmp"
   mv -f "$txt_tmp" "$PIN_DIR/$id.txt"   # last: this is what makes it "exist" in the menu
-  notify clipboard "Pinned"
 }
 
 toggle_pin() {
@@ -332,7 +327,6 @@ delete_entry() {
   else
     printf '%s' "$key" | cliphist delete
   fi
-  notify clipboard "Deleted"
 }
 
 wipe_history() {
@@ -344,7 +338,6 @@ wipe_history() {
     cliphist wipe
     local file
     for file in "$IMAGE_CACHE"/*; do rm -f "$file" "$(thumbnail_path "$file")"; done
-    notify clipboard "History wiped" "Pins kept"
   fi
 }
 
