@@ -14,8 +14,12 @@ configuration {
     sort:                  true;
     case-sensitive:        false;
     hover-select:          true;
-    me-select-entry:       "MousePrimary";
-    me-accept-entry:       "MouseDPrimary";
+    me-select-entry:       "";
+    me-accept-entry:       "MousePrimary";
+    ml-row-up:             "";
+    ml-row-down:           "";
+    kb-page-prev:          "Page_Up,ScrollUp";
+    kb-page-next:          "Page_Down,ScrollDown";
     /* No kb-custom-N here on purpose: rofi's custom bindings are one shared
        keymap per PROCESS, not per script, so pinning one here would reserve
        it for every menu, not just the one that actually uses it -- which is
