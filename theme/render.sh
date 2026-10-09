@@ -67,16 +67,25 @@ render_table() {
   done
 }
 
-# One stylesheet serves both GTK versions: it recolours GTK's own base theme,
-# which lives at a different resource path (and name) in GTK3 and GTK4.
-render_gtk_theme() {
+# GTK3: import adw-gtk-theme (light or dark, to match the theme's mode) and
+# recolour its named colours -- see gtk3-colors.css for why that replaces a
+# direct Adwaita recolour.
+render_gtk3_theme() {
+  local vars adw_variant=adw-gtk3
+  [[ "$THEME_MODE" == dark ]] && adw_variant=adw-gtk3-dark
+  vars=$(envsubst_vars GTK3_ADW_IMPORT)
+  export GTK3_ADW_IMPORT="file:///usr/share/themes/$adw_variant/gtk-3.0/gtk.css"
+  render_file gtk3-colors.css "$GTK_THEME_DIR/gtk-3.0/gtk.css" "$vars"
+}
+
+# GTK4: recolour the "Default" base theme for the few apps that don't use
+# libadwaita (gtk4-libadwaita.css already covers the ones that do).
+render_gtk4_fallback() {
   local vars
   vars=$(envsubst_vars GTK_BASE_URL)
   export GTK_BASE_URL
-  GTK_BASE_URL="resource:///org/gtk/libgtk/theme/Adwaita/$GTK3_BASE_CSS"
-  render_file gtk-theme.css "$GTK_THEME_DIR/gtk-3.0/gtk.css" "$vars"
   GTK_BASE_URL="resource:///org/gtk/libgtk/theme/Default/$GTK4_BASE_CSS"
-  render_file gtk-theme.css "$GTK_THEME_DIR/gtk-4.0/gtk.css" "$vars"
+  render_file gtk4-fallback.css "$GTK_THEME_DIR/gtk-4.0/gtk.css" "$vars"
 }
 
 # Everything except theme_activate itself, so mars-theme-export can render an
@@ -85,7 +94,8 @@ render_gtk_theme() {
 render_all() {
   render_table "$(envsubst_vars)" "${RENDER_TABLE[@]}"
   render_table "$(envsubst_vars HOME)" "${RENDER_WITH_HOME_TABLE[@]}"
-  render_gtk_theme
+  render_gtk3_theme
+  render_gtk4_fallback
 }
 
 main() {
