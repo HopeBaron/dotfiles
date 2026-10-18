@@ -15,7 +15,8 @@ hyprpolkitagent             # polkit auth agent (Hyprland's own). Without one
 xdg-desktop-portal-hyprland
 kitty
 rofi                        # launcher + dmenu for window/power/clipboard menus (2.0 is Wayland-native)
-jq                          # rofi-windows.sh parses `hyprctl clients -j`
+jq                          # rofi-windows.sh, workspaces.sh parse `hyprctl ... -j`
+socat                       # workspaces.sh listens on Hyprland's event socket
 waybar                      # top bar
 swaync                      # notification daemon + control centre (waybar module)
 swayosd                     # on-screen volume/brightness/media popup. The media keys

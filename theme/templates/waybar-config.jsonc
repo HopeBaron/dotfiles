@@ -11,7 +11,9 @@
   "margin-left": 10,
   "margin-right": 10,
 
-  "modules-left":   ["hyprland/workspaces"],
+  "modules-left":   ["custom/ws1", "custom/ws2", "custom/ws3", "custom/ws4", "custom/ws5",
+                     "custom/ws6", "custom/ws7", "custom/ws8", "custom/ws9", "custom/ws10",
+                     "custom/ws-events"],
   "modules-center": ["clock", "tray"],
   "modules-right":  ["hyprland/language", "cpu", "memory", "pulseaudio", "network",
                      "bluetooth", "custom/caffeine", "custom/notification", "custom/power"],
@@ -26,16 +28,43 @@
     "format": "\uf11c  {shortDescription}"
   },
 
-  "hyprland/workspaces": {
-    // No "on-click" here on purpose. Click-to-switch is non-functional on
-    // this system regardless -- this Hyprland build's Lua config rejects
-    // the classic `dispatch <name> <args>` IPC syntax waybar's built-in
-    // click handler sends (server-side, for any client, not just the CLI).
-    // Switching stays keyboard-only (SUPER+1-0). Not a config bug to "fix"
-    // here; see memory hyprland-lua-dispatch-breaks-classic-syntax.
-    "format": "{name}",
-    "sort-by": "number"
-  },
+  // Workspace buttons. Not the built-in hyprland/workspaces module: its
+  // click handler sends the classic `dispatch workspace N`, which this
+  // Hyprland's Lua config rejects, so its buttons were dead. Each button is
+  // its own module so it can have its own on-click; workspaces.sh explains.
+  // "signal": 9 matches the `pkill -RTMIN+9 waybar` in workspaces.sh listen.
+  "custom/ws1": { "exec": "$HOME/.config/hypr/scripts/workspaces.sh show 1", "return-type": "json",
+                   "on-click": "$HOME/.config/hypr/scripts/workspaces.sh focus 1",
+                   "signal": 9, "tooltip": false },
+  "custom/ws2": { "exec": "$HOME/.config/hypr/scripts/workspaces.sh show 2", "return-type": "json",
+                   "on-click": "$HOME/.config/hypr/scripts/workspaces.sh focus 2",
+                   "signal": 9, "tooltip": false },
+  "custom/ws3": { "exec": "$HOME/.config/hypr/scripts/workspaces.sh show 3", "return-type": "json",
+                   "on-click": "$HOME/.config/hypr/scripts/workspaces.sh focus 3",
+                   "signal": 9, "tooltip": false },
+  "custom/ws4": { "exec": "$HOME/.config/hypr/scripts/workspaces.sh show 4", "return-type": "json",
+                   "on-click": "$HOME/.config/hypr/scripts/workspaces.sh focus 4",
+                   "signal": 9, "tooltip": false },
+  "custom/ws5": { "exec": "$HOME/.config/hypr/scripts/workspaces.sh show 5", "return-type": "json",
+                   "on-click": "$HOME/.config/hypr/scripts/workspaces.sh focus 5",
+                   "signal": 9, "tooltip": false },
+  "custom/ws6": { "exec": "$HOME/.config/hypr/scripts/workspaces.sh show 6", "return-type": "json",
+                   "on-click": "$HOME/.config/hypr/scripts/workspaces.sh focus 6",
+                   "signal": 9, "tooltip": false },
+  "custom/ws7": { "exec": "$HOME/.config/hypr/scripts/workspaces.sh show 7", "return-type": "json",
+                   "on-click": "$HOME/.config/hypr/scripts/workspaces.sh focus 7",
+                   "signal": 9, "tooltip": false },
+  "custom/ws8": { "exec": "$HOME/.config/hypr/scripts/workspaces.sh show 8", "return-type": "json",
+                   "on-click": "$HOME/.config/hypr/scripts/workspaces.sh focus 8",
+                   "signal": 9, "tooltip": false },
+  "custom/ws9": { "exec": "$HOME/.config/hypr/scripts/workspaces.sh show 9", "return-type": "json",
+                   "on-click": "$HOME/.config/hypr/scripts/workspaces.sh focus 9",
+                   "signal": 9, "tooltip": false },
+  "custom/ws10": { "exec": "$HOME/.config/hypr/scripts/workspaces.sh show 10", "return-type": "json",
+                    "on-click": "$HOME/.config/hypr/scripts/workspaces.sh focus 10",
+                    "signal": 9, "tooltip": false },
+  // Never prints, so never drawn: just keeps the listener tied to the bar.
+  "custom/ws-events": { "exec": "$HOME/.config/hypr/scripts/workspaces.sh listen" },
 
 
   // Date and time together, always -- no format-alt, so there's nothing to
