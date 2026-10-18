@@ -1,0 +1,32 @@
+From 1a74389d6fa0bc5eb212ef4a2e8471a0630ddf80 Mon Sep 17 00:00:00 2001
+From: HopeBaron <truehope9000@gmail.com>
+Date: Sun, 18 Oct 2026 11:14:12 +0300
+Subject: [PATCH] tab bar: keep right-to-left titles inside their tab
+
+With a layout width set, Pango right-aligns RTL text (e.g. Arabic) in
+it, so ink_extents.x includes the unused width. Using it as the texture
+offset pushed such titles to the right, out of their tab. Offset from
+the logical line start instead; LTR titles start at 0 and are unchanged.
+---
+ src/TabGroup.cpp | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/src/TabGroup.cpp b/src/TabGroup.cpp
+index a1bf24d..82f24ca 100644
+--- a/src/TabGroup.cpp
++++ b/src/TabGroup.cpp
+@@ -309,7 +309,10 @@ void Hy3TabBarEntry::renderText(float scale, CBox& box, float opacity) {
+ 		this->last_render.logical_width = PANGO_PIXELS(logical_extents.width);
+ 		this->last_render.logical_height = PANGO_PIXELS(logical_extents.height);
+ 
+-		this->last_render.texture_x_offset = ink_x;
++		// Measured from the line's own start: Pango right-aligns a right-to-left
++		// title within the layout width, which would otherwise push it out of
++		// the tab by the unused width.
++		this->last_render.texture_x_offset = ink_x - PANGO_PIXELS(logical_extents.x);
+ 		this->last_render.texture_y_offset = ink_y;
+ 		this->last_render.texture_width = ink_width;
+ 		this->last_render.texture_height = ink_height;
+-- 
+2.56.0
+
