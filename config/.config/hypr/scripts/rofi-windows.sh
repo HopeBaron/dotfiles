@@ -81,7 +81,7 @@ while :; do
   # layout reports it the other way.
   rc=0
   choice=$(print_rows \
-    | rofi -dmenu -i -p "$prompt" \
+    | rofi -dmenu -sync -i -p "$prompt" \
            -mesg "<b>Enter</b> focus   <b>Alt+x</b> close   <b>Alt+Shift+x</b> force close   <b>Alt+m</b> move here   <b>Alt+a</b> $hint" \
            -kb-custom-1 "Alt+x" -kb-custom-2 "Alt+X,Alt+Shift+X" -kb-custom-3 "Alt+m" -kb-custom-5 "Alt+a") || rc=$?
 

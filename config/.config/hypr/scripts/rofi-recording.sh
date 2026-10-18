@@ -32,7 +32,7 @@ readonly ROFI_PID="${XDG_RUNTIME_DIR:-/tmp}/rofi-screenshot.pid"
 # Prints the chosen row's index (-format i), nothing on Escape.
 menu() {
   local prompt=$1; shift
-  rofi -dmenu -i -p "$prompt" -format i -pid "$ROFI_PID" "$@"
+  rofi -dmenu -sync -i -p "$prompt" -format i -pid "$ROFI_PID" "$@"
 }
 
 # ---- settings ---------------------------------------------------------------

@@ -38,7 +38,7 @@ done
 # -format i: rofi prints the chosen row's index, so the label never has to
 # be parsed back into a file name.
 rc=0
-index=$(rows | rofi -dmenu -i -format i -theme preview -selected-row "$current_row" \
+index=$(rows | rofi -dmenu -sync -i -format i -theme preview -selected-row "$current_row" \
           -kb-custom-1 "Alt+r" \
           -mesg '<b>Enter</b> set wallpaper   <b>Alt+r</b> apply to several themes') || rc=$?
 [[ -n "${index:-}" ]] || exit 0

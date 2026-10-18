@@ -24,7 +24,7 @@ rows() {
 current_row=0
 for i in "${!ids[@]}"; do [[ "${ids[$i]}" == "$current" ]] && current_row=$i; done
 
-index=$(rows | rofi -dmenu -i -format i -selected-row "$current_row" \
+index=$(rows | rofi -dmenu -sync -i -format i -selected-row "$current_row" \
           -theme-str 'window { width: 480px; } listview { lines: 12; scrollbar: true; }' \
           -mesg '<b>Enter</b> apply theme   (accent is kept)') || exit 0
 [[ -n "$index" ]] || exit 0

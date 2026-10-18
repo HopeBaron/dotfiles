@@ -47,7 +47,7 @@ for i in "${!ids[@]}"; do [[ "${ids[$i]}" == "$current" ]] && selected_row=$i; d
 
 while true; do
   rc=0
-  index=$(rows | rofi -dmenu -i -format i -selected-row "$selected_row" \
+  index=$(rows | rofi -dmenu -sync -i -format i -selected-row "$selected_row" \
             -theme-str 'window { width: 520px; } listview { lines: 12; scrollbar: true; }' \
             -kb-custom-1 "Alt+space" -kb-custom-2 "Alt+a" -kb-custom-3 "Alt+x" \
             -mesg '<b>Alt+Space</b> toggle   <b>Alt+a</b> all   <b>Alt+x</b> none   <b>Enter</b> apply') || rc=$?

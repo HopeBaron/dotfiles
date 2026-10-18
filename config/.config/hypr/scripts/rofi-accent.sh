@@ -60,7 +60,7 @@ spec_for_row() {
         echo "$ACCENT_SPEC"
       else
         local hex
-        hex=$(rofi -dmenu -p '#' </dev/null \
+        hex=$(rofi -dmenu -sync -p '#' </dev/null \
                 -theme-str 'listview { enabled: false; } entry { placeholder: "rrggbb, e.g. d65d0e"; }' \
                 -mesg 'Type a hex colour and press <b>Enter</b>') || return 1
         accent_is_hex "$hex" || { notify theme "Not a colour: $hex" "Use six hex digits, like d65d0e"; return 1; }
@@ -72,7 +72,7 @@ spec_for_row() {
 }
 
 rc=0
-index=$(rows | rofi -dmenu -i -markup-rows -format i -selected-row "$current_row" \
+index=$(rows | rofi -dmenu -sync -i -markup-rows -format i -selected-row "$current_row" \
           -kb-custom-1 "Alt+r" \
           -theme-str 'window { width: 320px; } listview { lines: 9; }' \
           -mesg '<b>Enter</b> apply   <b>Alt+r</b> apply to several themes') || rc=$?

@@ -42,7 +42,7 @@ XEOF
 
 printf '%s\n%s\n' "$binds" "$EXTRAS" \
   | awk -F'\t' '{ printf "%-26s %s\n", $1, $2 }' \
-  | rofi -dmenu -i -p "Shortcuts" \
+  | rofi -dmenu -sync -i -p "Shortcuts" \
       -mesg '<b>Type to filter</b>   <b>Esc</b> close' \
       -theme-str '* { font: "JetBrainsMono Nerd Font 10"; }
                   window { width: 640px; }

@@ -62,7 +62,7 @@ toggle_incognito() {
 # incognito is on. Enter or Alt+q turns it back off; Esc just leaves.
 incognito_notice() {
   local rc=0
-  rofi -dmenu -i -format i -mesg "Incognito is on -- history isn't being recorded" \
+  rofi -dmenu -sync -i -format i -mesg "Incognito is on -- history isn't being recorded" \
        -kb-custom-4 "Alt+q" <<<"Turn off incognito" >/dev/null || rc=$?
   case "$rc" in
     0|"$KEY_INCOGNITO") toggle_incognito ;;
@@ -332,7 +332,7 @@ delete_entry() {
 wipe_history() {
   local answer
   answer=$(printf 'No, keep it\nYes, wipe history\n' |
-    rofi -dmenu -i -mesg "Wipe clipboard history? Pins are kept" \
+    rofi -dmenu -sync -i -mesg "Wipe clipboard history? Pins are kept" \
          -theme-str 'window { width: 360px; } listview { lines: 2; }') || return 0
   if [[ "$answer" == "Yes, wipe history" ]]; then
     cliphist wipe
@@ -360,7 +360,7 @@ main() {
 
     rc=0
     index=$(printf '%s\n' "$rows" | menu_lines |
-      rofi -dmenu -i -format i -theme preview -mesg "$(footer)" \
+      rofi -dmenu -sync -i -format i -theme preview -mesg "$(footer)" \
            -kb-custom-1 "Alt+p" -kb-custom-2 "Alt+d" -kb-custom-3 "Alt+w" \
            -kb-custom-4 "Alt+q") || rc=$?
 

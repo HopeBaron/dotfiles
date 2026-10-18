@@ -15,7 +15,7 @@ if [[ -x "$scripts/caffeine.sh" ]]; then
 fi
 entries+=("󰤄  Suspend" "󰗽  Log out" "󰜉  Reboot" "󰐥  Shut down")
 
-choice=$(printf '%s\n' "${entries[@]}" | rofi -dmenu -i -p "Power" -theme-str 'window { width: 320px; } listview { lines: 6; }')
+choice=$(printf '%s\n' "${entries[@]}" | rofi -dmenu -sync -i -p "Power" -theme-str 'window { width: 320px; } listview { lines: 6; }')
 
 case "${choice:-}" in
   *Lock)        hyprlock ;;

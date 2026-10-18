@@ -14,7 +14,7 @@ entries=(
 labels=()
 for (( i = 0; i < ${#entries[@]}; i += 2 )); do labels+=("${entries[i]}"); done
 
-index=$(printf '%s\n' "${labels[@]}" | rofi -dmenu -i -format i \
+index=$(printf '%s\n' "${labels[@]}" | rofi -dmenu -sync -i -format i \
           -theme-str 'window { width: 300px; } listview { lines: 3; }') || exit 0
 [[ -n "$index" ]] || exit 0
 

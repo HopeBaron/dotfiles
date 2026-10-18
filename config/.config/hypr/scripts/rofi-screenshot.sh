@@ -127,7 +127,7 @@ wait_for_freeze
 
 while true; do
   rc=0
-  i=$(printf '%s\n' "${labels[@]}" | rofi -dmenu -i -p "Screenshot" -format i \
+  i=$(printf '%s\n' "${labels[@]}" | rofi -dmenu -sync -i -p "Screenshot" -format i \
     -pid "$ROFI_PID" \
     -selected-row "$selected" -mesg "$FOOTER" \
     -kb-custom-4 "Alt+c" \
