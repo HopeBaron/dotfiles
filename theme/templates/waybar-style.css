@@ -46,8 +46,9 @@ window#waybar {
 
 /* ---------- left: workspaces ---------- */
 
-/* custom/wsN modules (see workspaces.sh); "ws" is a class each one sets. */
-.ws {
+#workspaces { padding: 0; margin: 0; }
+
+#workspaces button {
   padding: 0 8px;
   margin: 4px 2px;
   min-width: 16px;
@@ -57,15 +58,20 @@ window#waybar {
   transition: background-color 150ms ease, color 150ms ease;
 }
 
-.ws:hover {
+#workspaces button:hover {
   color: #${FG0};
   background-color: alpha(#${BG3}, 0.6);
 }
 
 /* The only always-on accent in the bar: where you are is worth a colour. */
-.ws.active {
+#workspaces button.active {
   color: #${ACCENT_FG};
   background-color: #${ACCENT};
+}
+
+#workspaces button.urgent {
+  color: #${BG0};
+  background-color: #${RED};
 }
 
 /* ---------- centre: clock ---------- */
