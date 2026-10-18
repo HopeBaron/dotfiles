@@ -5,13 +5,15 @@
 # system, the NVIDIA driver and the audio/network services, so none of that
 # is repeated here. Its display manager (GDM) is swapped for a themed SDDM.
 #
-#   ./install.sh              packages, hy3, theme, configs (stow), commands, SDDM
+#   ./install.sh              packages, hy3 (patched), theme, configs (stow), commands, SDDM
 #   ./install.sh --no-deploy  packages only: skip theme, stow, commands, SDDM
 #   ./install.sh --config-only  theme, stow, commands, SDDM only: skip the
 #                              system upgrade and package installs entirely
 #                              (for re-applying config changes, e.g. after
 #                              editing something under config/ or system/)
 #   ./install.sh --utils      also install packages/utils.txt
+#   ./install.sh --hy3        hy3 only: re-patch and rebuild it (after a
+#                              Hyprland or hy3 update, or a patches/ change)
 #
 # Safe to re-run; every step is idempotent.
 set -euo pipefail
@@ -24,6 +26,7 @@ readonly DEFAULT_SESSION=/usr/share/wayland-sessions/hyprland-uwsm.desktop
 DEPLOY=1
 WITH_UTILS=0
 CONFIG_ONLY=0
+HY3_ONLY=0
 
 # ---- helpers -----------------------------------------------------------------
 
@@ -57,6 +60,7 @@ parse_args() {
       --no-deploy)   DEPLOY=0 ;;
       --config-only) CONFIG_ONLY=1 ;;
       --utils)       WITH_UTILS=1 ;;
+      --hy3)         HY3_ONLY=1 ;;
       -h|--help)     usage ;;
       *) echo "unknown option: $arg" >&2; usage 2 ;;
     esac
@@ -115,15 +119,58 @@ enable_services() {
 # the repos; hyprpm builds it against the installed Hyprland's headers. Runs
 # after the system upgrade so a new Hyprland gets matching headers and a
 # rebuilt plugin. Not fatal: without hy3, Hyprland falls back to dwindle.
+#
+# It's built from a local clone with patches/*.patch applied on top of the
+# hy3 commit pinned for the installed Hyprland -- no fork to keep in sync.
+# hyprpm is handed that patched commit as an explicit revision, which it
+# keeps for every later `hyprpm update` instead of following the pins; so
+# after a Hyprland upgrade, re-run ./install.sh to re-patch the new pin.
 readonly HY3_URL=https://github.com/kociap/hy3
+readonly HY3_SRC=${XDG_DATA_HOME:-$HOME/.local/share}/mars/hy3
+
+# Prints the patched commit to build.
+prepare_hy3() {
+  # Called from an `if`, where set -e is off: every step fails explicitly.
+  local hl_commit pin
+  if [[ -d "$HY3_SRC/.git" ]]; then
+    git -C "$HY3_SRC" am --abort 2>/dev/null || true # a failed earlier run
+    git -C "$HY3_SRC" fetch -q origin || return 1
+  else
+    mkdir -p "$(dirname "$HY3_SRC")"
+    git clone -q "$HY3_URL" "$HY3_SRC" || return 1
+  fi
+
+  # hyprpm.toml maps Hyprland commits to the hy3 commit that builds against
+  # them; an untagged (-git) Hyprland has no pin and gets hy3's latest.
+  hl_commit=$(Hyprland --version | sed -n 's/.* at commit \([0-9a-f]\{40\}\).*/\1/p')
+  pin=$(git -C "$HY3_SRC" show origin/HEAD:hyprpm.toml \
+        | sed -n "s/.*\"$hl_commit\", \"\([0-9a-f]\{40\}\)\".*/\1/p")
+  git -C "$HY3_SRC" checkout -q -B mars "${pin:-origin/HEAD}" || return 1
+  if ! git -C "$HY3_SRC" -c user.name=mars -c user.email=mars@localhost \
+         am -q "$REPO"/patches/hy3-*.patch; then
+    git -C "$HY3_SRC" am --abort
+    return 1
+  fi
+  git -C "$HY3_SRC" rev-parse HEAD
+}
 
 install_hyprland_plugins() {
-  say "Building the hy3 plugin with hyprpm"
-  # hyprpm asks for confirmation (and sudo, for the headers) as it goes;
-  # `< <(yes)` answers the prompts without a pipe, which pipefail would trip
-  # on when `yes` is killed by SIGPIPE.
+  local rev
+  say "Building the patched hy3 plugin with hyprpm"
+  if ! rev=$(prepare_hy3); then
+    note "patching hy3 failed (patches/ may need rebasing onto the new pin)."
+    return 0
+  fi
+  # Re-added every run: the revision is fixed at add time. Removing it first
+  # also keeps `hyprpm update` from rebuilding a stale revision against new
+  # headers. hyprpm asks for confirmation (and sudo, for the headers) as it
+  # goes; `< <(yes)` answers the prompts without a pipe, which pipefail would
+  # trip on when `yes` is killed by SIGPIPE.
+  if grep -q 'Plugin hy3' < <(hyprpm list); then
+    hyprpm remove hy3 < <(yes) || true
+  fi
   if ! hyprpm update < <(yes) \
-     || { ! grep -q 'Plugin hy3' < <(hyprpm list) && ! hyprpm add "$HY3_URL" < <(yes); } \
+     || ! hyprpm add "$HY3_SRC" "$rev" < <(yes) \
      || ! hyprpm enable hy3; then
     note "hyprpm failed; log into Hyprland and re-run ./install.sh to retry."
     return 0
@@ -215,6 +262,13 @@ deploy_all() {
 main() {
   parse_args "$@"
   check_not_root
+  if (( HY3_ONLY )); then
+    install_hyprland_plugins
+    # A running Hyprland keeps the old hy3 mapped even after hyprpm swaps the
+    # file (the library is never really unloaded), so reloading isn't enough.
+    say "Done. Log out and back in to load the rebuilt hy3."
+    return
+  fi
   if (( CONFIG_ONLY )); then
     deploy_all
     say "Done."

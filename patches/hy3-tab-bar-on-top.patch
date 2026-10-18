@@ -1,0 +1,40 @@
+From 168048858e3ea40960e4b680854766c8a6d54611 Mon Sep 17 00:00:00 2001
+From: HopeBaron <truehope9000@gmail.com>
+Date: Sun, 18 Oct 2026 10:20:27 +0300
+Subject: [PATCH] tab bar: draw on top of windows while animating
+
+The stencil hid the bar wherever a window currently is while tabs slide
+in/out. On group/close the windows are still moving out of the bar's
+spot, so the whole bar vanished for the length of windowsMove.
+---
+ src/TabGroup.cpp | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
+
+diff --git a/src/TabGroup.cpp b/src/TabGroup.cpp
+index 8a5f638..a1bf24d 100644
+--- a/src/TabGroup.cpp
++++ b/src/TabGroup.cpp
+@@ -772,16 +772,10 @@ void Hy3TabGroup::renderTabBar() {
+ 
+ 	this->bar.setSize(scaledBox.size());
+ 
+-	auto render_stencil = this->bar.fade_opacity->isBeingAnimated();
+-
+-	if (!render_stencil) {
+-		for (auto& entry: this->bar.entries) {
+-			if (entry.vertical_pos->isBeingAnimated()) {
+-				render_stencil = true;
+-				break;
+-			}
+-		}
+-	}
++	// Never hide the bar behind windows while it animates: on group/close the
++	// windows are still moving out of the bar's spot, so the whole bar would
++	// stay hidden until they stop. Draw it on top instead.
++	auto render_stencil = false;
+ 
+ 	if (render_stencil) {
+ 		g_pHyprRenderer->m_renderData.currentFB->bind();
+-- 
+2.56.0
+

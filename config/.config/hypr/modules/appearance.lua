@@ -92,7 +92,7 @@ hl.config({
     },
 })
 
--- Curves and animations: Hyprland's defaults, except windowsMove.
+-- Curves and animations: Hyprland's defaults.
 -- See https://wiki.hypr.land/Configuring/Advanced-and-Cool/Animations/
 hl.curve("easeOutQuint",   { type = "bezier", points = { {0.23, 1},    {0.32, 1} } })
 hl.curve("easeInOutCubic", { type = "bezier", points = { {0.65, 0.05}, {0.36, 1} } })
@@ -100,9 +100,6 @@ hl.curve("linear",         { type = "bezier", points = { {0, 0},       {1, 1}   
 hl.curve("almostLinear",   { type = "bezier", points = { {0.5, 0.5},   {0.75, 1} } })
 hl.curve("quick",          { type = "bezier", points = { {0.15, 0},    {0.1, 1}  } })
 hl.curve("easy",           { type = "spring", mass = 1, stiffness = 238.1191, dampening = 24.21279333 })
--- "easy" played 3x faster (stiffness x9, damping x3): same bounce, ~0.2s
--- instead of ~0.6s.
-hl.curve("easyFast",       { type = "spring", mass = 1, stiffness = 2143.0719, dampening = 72.63838 })
 
 local animations = {
     -- leaf             speed  curve                      style
@@ -111,10 +108,6 @@ local animations = {
     { "windows",        4.79,  { spring = "easy" } },
     { "windowsIn",      4.1,   { spring = "easy" },         "popin 87%" },
     { "windowsOut",     1.49,  { bezier = "linear" },       "popin 87%" },
-    -- hy3 hides its tab bar wherever a window is while tabs slide in, and
-    -- tabs and windows both move on this leaf: keep it short so the bar
-    -- only flickers on group/close instead of vanishing for the whole spring.
-    { "windowsMove",    4.79,  { spring = "easyFast" } },
     { "fadeIn",         1.73,  { bezier = "almostLinear" } },
     { "fadeOut",        1.46,  { bezier = "almostLinear" } },
     { "fade",           3.03,  { bezier = "quick" } },
