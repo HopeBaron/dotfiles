@@ -6,14 +6,15 @@
 # scope never means pressing a different key combo, just a footer action --
 # same shape as the clipboard and screenshot menus. Alt+x / Alt+Shift+x close
 # or force-close the highlighted window (same two dispatchers as the SUPER+X
-# / SUPER+SHIFT+X binds) without leaving the menu, in either scope.
+# / SUPER+SHIFT+X binds) without leaving the menu, in either scope. Alt+m
+# pulls the highlighted window onto the current workspace and focuses it.
 #
 # rofi has a built-in `window` mode, but it only sees the active workspace on
 # Hyprland, so the list is built from `hyprctl clients` instead.
 set -euo pipefail
 
 # rofi exit codes for this script's own -kb-custom-N (10 + N - 1).
-readonly KEY_CLOSE=10 KEY_KILL=11 KEY_SCOPE=14
+readonly KEY_CLOSE=10 KEY_KILL=11 KEY_PULL=12 KEY_SCOPE=14
 
 scope=${1:-global}   # global | workspace -- starting scope; Alt+a toggles it
 
@@ -81,8 +82,8 @@ while :; do
   rc=0
   choice=$(print_rows \
     | rofi -dmenu -i -p "$prompt" \
-           -mesg "<b>Enter</b> focus   <b>Alt+x</b> close   <b>Alt+Shift+x</b> force close   <b>Alt+a</b> $hint" \
-           -kb-custom-1 "Alt+x" -kb-custom-2 "Alt+X,Alt+Shift+X" -kb-custom-5 "Alt+a") || rc=$?
+           -mesg "<b>Enter</b> focus   <b>Alt+x</b> close   <b>Alt+Shift+x</b> force close   <b>Alt+m</b> move here   <b>Alt+a</b> $hint" \
+           -kb-custom-1 "Alt+x" -kb-custom-2 "Alt+X,Alt+Shift+X" -kb-custom-3 "Alt+m" -kb-custom-5 "Alt+a") || rc=$?
 
   if [ "$rc" -eq "$KEY_SCOPE" ]; then
     [ "$scope" = workspace ] && scope=global || scope=workspace
@@ -97,6 +98,10 @@ while :; do
   case "$rc" in
     "$KEY_CLOSE") hyprctl dispatch "hl.dsp.window.close({ window = \"address:$addr\" })"; continue ;;
     "$KEY_KILL")  hyprctl dispatch "hl.dsp.window.kill({ window = \"address:$addr\" })";  continue ;;
+    "$KEY_PULL")
+      ws=$(hyprctl activeworkspace -j | jq -r '.id')
+      hyprctl dispatch "hl.dsp.window.move({ workspace = $ws, follow = false, window = \"address:$addr\" })"
+      hyprctl dispatch "hl.dsp.focus({ window = \"address:$addr\" })" ;;
     *) hyprctl dispatch "hl.dsp.focus({ window = \"address:$addr\" })" ;;
   esac
   exit 0
