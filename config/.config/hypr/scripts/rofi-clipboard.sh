@@ -213,11 +213,14 @@ collect_rows() {
 # rofi input: the label, plus its icon (an image entry's thumbnail; empty
 # for text) as the row's element-icon, enlarged in the preview pane when
 # that row is highlighted.
+# Each label starts with a left-to-right mark (U+200E): Pango picks a line's
+# direction from its first letter, so Arabic entries would otherwise flip to
+# right-aligned among left-aligned ones. Safe here since rofi returns an index.
 menu_lines() {
   local kind key label icon
   while IFS="$SEP" read -r kind key label icon; do
-    if [[ -n "$icon" ]]; then printf '%s\0icon\x1f%s\n' "$label" "$icon"
-    else                      printf '%s\n' "$label"
+    if [[ -n "$icon" ]]; then printf '\u200e%s\0icon\x1f%s\n' "$label" "$icon"
+    else                      printf '\u200e%s\n' "$label"
     fi
   done
 }
