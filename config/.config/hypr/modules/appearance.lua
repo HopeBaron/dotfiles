@@ -79,6 +79,12 @@ hl.config({
         force_default_wallpaper = 0,
         disable_hyprland_logo   = true,
         background_color        = argb(c.bg0),
+
+        -- A program's windows open on the workspace it was launched on, not
+        -- the one you're focused on when they appear (2 = every window, not
+        -- just the first). Placed before the window maps, so a fullscreen
+        -- window elsewhere is never disturbed.
+        initial_workspace_tracking = 2,
     },
 
     animations = {
