@@ -49,7 +49,7 @@ readonly MARS_TEMPLATE_VARS=(
   RED ORANGE YELLOW GREEN AQUA BLUE PURPLE
   ACCENT ACCENT_FG SHADOW
   THEME_ID THEME_LABEL THEME_MODE
-  GTK4_BASE_CSS GTK_PREFER_DARK COLOR_SCHEME ICON_THEME
+  GTK_PREFER_DARK COLOR_SCHEME ICON_THEME
 )
 
 # shellcheck source=gruvbox-material.sh
@@ -180,11 +180,9 @@ theme_derive() {
   if (( $(_luma "$ACCENT") > 140 )); then ACCENT_FG=$dark_end; else ACCENT_FG=$light_end; fi
 
   if [[ "$THEME_MODE" == dark ]]; then
-    export GTK4_BASE_CSS=Default-dark.css
     export GTK_PREFER_DARK=1 COLOR_SCHEME=prefer-dark ICON_THEME=Gruvbox-Plus-Dark
     export SHADOW=$BG_DIM
   else
-    export GTK4_BASE_CSS=Default-light.css
     export GTK_PREFER_DARK=0 COLOR_SCHEME=prefer-light ICON_THEME=Gruvbox-Plus-Light
     # A light theme's darkest background is still near-white: useless as a
     # shadow. Use the text colour instead, at the same alpha.

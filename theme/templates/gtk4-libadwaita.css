@@ -4,9 +4,10 @@
  * libadwaita draws every widget from named colours, so overriding them is the
  * supported way to recolour it. libadwaita >= 1.6 reads the CSS variables; the
  * @define-color names are kept for GTK4 apps that still use the old ones.
- * Only colours here -- one rubberband rule at the end aside, no widget rules
- * -- so non-libadwaita GTK4 apps that load this file too (swaync is one)
- * keep their own styling.
+ * Only colours here, no widget rules: apps keep libadwaita's own look (grey
+ * file-view selection and sidebar highlight included), just in this palette,
+ * and non-libadwaita GTK4 apps that load this file too (swaync is one) keep
+ * their own styling.
  */
 
 :root {
@@ -41,6 +42,8 @@
   --sidebar-border-color:   #${BG3};
   --secondary-sidebar-bg-color: #${BG1};
   --secondary-sidebar-fg-color: #${FG0};
+  --secondary-sidebar-backdrop-color: #${BG1};
+  --secondary-sidebar-border-color:   #${BG3};
   --card-bg-color:          #${BG1};
   --card-fg-color:          #${FG0};
   --dialog-bg-color:        #${BG1};
@@ -49,6 +52,10 @@
   --popover-fg-color:       #${FG0};
   --thumbnail-bg-color:     #${BG1};
   --thumbnail-fg-color:     #${FG0};
+  /* Tab overview (the grid of open tabs) and AdwBanner: GNOME greys otherwise. */
+  --overview-bg-color:      #${BG1};
+  --overview-fg-color:      #${FG0};
+  --banner-color:           #${GREY1};
 }
 
 @define-color accent_color          #${ACCENT};
@@ -101,52 +108,3 @@
 @define-color borders                      #${BG3};
 @define-color unfocused_borders            #${BG3};
 
-/* Nautilus's own stylesheet swaps in a grey --accent-bg-color on its file
- * views (.nautilus-grid-view gridview etc.), which the drag-select box
- * inherits instead of the accent above -- and it came out libadwaita's blue.
- * This file outranks an app's own stylesheet, so naming the colours directly
- * wins. Harmless elsewhere: only list/grid views have a rubberband. */
-rubberband {
-  border: 1px solid #${ACCENT};
-  background-color: alpha(#${ACCENT}, 0.2);
-}
-
-/* A lighter accent for an unfocused (:backdrop) selection -- same mix()
- * adw-gtk-theme itself uses to derive accent_color from accent_bg_color, so
- * it reads as "the accent, dimmed" rather than a different hue. */
-@define-color accent_bg_color_backdrop mix(#${ACCENT}, white, 0.4);
-
-/* GTK4's Default theme bakes this literal hex straight into the declaration
- * -- background-color: #15539e -- instead of referencing any of the named
- * colours above, so no @define-color, ours or the legacy block's, can reach
- * it; only a selector of equal-or-greater specificity does. Only the
- * :backdrop (unfocused-window) variant needs it: the plain :selected form is
- * already covered, apparently by the app or libadwaita itself, since it
- * already picks up the accent above correctly. Verified against GTK4's
- * compiled Default-dark.css, and live in Nautilus: a selected file rendered
- * in stock Adwaita blue the moment its window lost focus, every other case
- * one row/grid selector away. */
-row:selected:backdrop, .view:selected:backdrop, textview > text:selected:backdrop,
-iconview:selected:backdrop, flowbox > flowboxchild:selected:backdrop,
-gridview > child:selected:backdrop, modelbutton.flat:selected:backdrop,
-columnview.view:selected:backdrop, treeview.view:selected:backdrop {
-  background-color: @accent_bg_color_backdrop;
-  color: #${ACCENT_FG};
-}
-
-/* GTK4's navigation sidebar (Nautilus's Home/Recent/Starred list, any
- * AdwNavigationSplitView sidebar) doesn't use the accent for its current-page
- * row at all by design -- Default-dark.css hardcodes #202020 (focused) with
- * no :backdrop variant of its own, so backdrop falls through to the same
- * literal-blue :selected rule above. Overriding both states to the accent
- * (full strength focused, dimmed backdrop) instead of GNOME's subtle-grey
- * convention, to match every other "selected" state on this desktop. */
-.navigation-sidebar > row:selected, placessidebar .navigation-sidebar > row:selected {
-  background-color: #${ACCENT};
-  color: #${ACCENT_FG};
-}
-.navigation-sidebar > row:selected:backdrop,
-placessidebar .navigation-sidebar > row:selected:backdrop {
-  background-color: @accent_bg_color_backdrop;
-  color: #${ACCENT_FG};
-}
