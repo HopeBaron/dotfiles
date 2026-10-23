@@ -9,6 +9,7 @@
 #   ./local-install.sh cli        install cli/ into a private venv, link `caelestia`
 #   ./local-install.sh dots       link hypr/ into ~/.config (the old one is kept aside)
 #   ./local-install.sh qt         optional: Qt/GTK theming packages (qtengine, Darkly, Papirus)
+#   ./local-install.sh sddm       optional: the Caelestia login screen (asks for sudo; re-run after a scheme change)
 #   ./local-install.sh check      verify everything above is in place; changes nothing
 #
 # Every step is safe to re-run. Nothing here is Caelestia-version-specific:
@@ -136,6 +137,13 @@ step_qt() {
   yay -S --needed qtengine frameworkintegration darkly-bin papirus-folders
 }
 
+# ---- login screen (optional) -----------------------------------------------
+
+step_sddm() {
+  say "SDDM login theme"
+  "$REPO/sddm/install.sh"
+}
+
 # ---- check ------------------------------------------------------------------
 
 step_check() {
@@ -184,6 +192,7 @@ main() {
     cli)      step_cli ;;
     dots)     step_dots ;;
     qt)       step_qt ;;
+    sddm)     step_sddm ;;
     check)    step_check ;;
     all)      step_packages; step_cli; step_shell; step_dots
               say "Done. Log out and back in (or run: caelestia shell -d)." ;;
