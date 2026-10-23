@@ -59,6 +59,9 @@ create_bind(
     end
 )
 
+-- Open windows, in the launcher
+create_bind("SUPER + Tab", hl.dsp.global("caelestia:windows"))
+
 -- Misc
 create_bind(vars.kbSession, hl.dsp.global("caelestia:session"))
 create_bind(vars.kbShowSidebar, hl.dsp.global("caelestia:sidebar"))
@@ -206,7 +209,7 @@ create_bind(
 create_bind(vars.kbSleep, hl.dsp.exec_cmd(vars.sleepGestureCmd), locked)
 
 -- Clipboard and emoji picker
-create_bind(vars.kbClipboard, hl.dsp.exec_cmd("pkill fuzzel || caelestia clipboard"))
+create_bind(vars.kbClipboard, hl.dsp.global("caelestia:clipboard")) -- the launcher's "clipboard" mode
 create_bind(vars.kbClipboardDel, hl.dsp.exec_cmd("pkill fuzzel || caelestia clipboard -d"))
 create_bind(vars.kbEmoji, hl.dsp.exec_cmd("pkill fuzzel || caelestia emoji -p"))
 create_bind(
@@ -214,6 +217,9 @@ create_bind(
     hl.dsp.exec_cmd('sleep 0.5s && ydotool type -d 1 "$(cliphist list | head -1 | cliphist decode)"'),
     locked
 )
+
+-- Cheatsheet: the launcher's "shortcut" mode (list in shell/modules/launcher/services/Cheatsheet.qml)
+create_bind("SUPER + SHIFT + slash", hl.dsp.global("caelestia:cheatsheet"))
 
 -- Testing
 create_bind(

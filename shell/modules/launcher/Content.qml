@@ -107,12 +107,25 @@ Item {
             }
         }
 
-        Component.onCompleted: forceActiveFocus()
+        function applyPrefill(): void {
+            if (root.screenState.launcher && root.screenState.launcherPrefill) {
+                text = root.screenState.launcherPrefill;
+                root.screenState.launcherPrefill = "";
+            }
+        }
+
+        Component.onCompleted: {
+            forceActiveFocus();
+            applyPrefill();
+        }
 
         Connections {
             function onLauncherChanged(): void {
-                if (!root.screenState.launcher)
+                if (!root.screenState.launcher) {
                     search.text = "";
+                } else {
+                    search.applyPrefill();
+                }
             }
 
             function onSessionChanged(): void {

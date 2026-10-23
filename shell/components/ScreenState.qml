@@ -8,6 +8,8 @@ PersistentProperties {
     property bool osd
     property bool session
     property bool launcher
+    property string launcherPrefill // search text to start the launcher with (e.g. ">shortcut ")
+    property bool liveFocus // the launcher is moving window focus as you browse (windows mode)
     property bool dashboard
     property bool utilities
     property bool sidebar

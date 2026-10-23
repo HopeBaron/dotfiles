@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Caelestia
+import Caelestia.Config
 import qs.components.misc
 import qs.services
 import qs.modules.nexus
@@ -11,6 +12,21 @@ Scope {
 
     property bool launcherInterrupted
     readonly property bool hasFullscreen: Hypr.focusedWorkspace?.toplevels.values.some(t => t.lastIpcObject.fullscreen > 1) ?? false
+
+    // Open the launcher in one of its modes (">clipboard " and so on), or close it if it is open.
+    function toggleLauncherMode(mode: string): void {
+        if (hasFullscreen)
+            return;
+        const screenState = ShellState.forActive();
+        if (!screenState)
+            return;
+        if (screenState.launcher) {
+            screenState.launcher = false;
+            return;
+        }
+        screenState.launcherPrefill = `${GlobalConfig.launcher.actionPrefix}${mode} `;
+        screenState.launcher = true;
+    }
 
     // qmllint disable unresolved-type
     CustomShortcut {
@@ -72,6 +88,30 @@ Scope {
             }
             root.launcherInterrupted = false;
         }
+    }
+
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "cheatsheet"
+        description: "Show the keybind cheatsheet"
+        onPressed: root.toggleLauncherMode("shortcut")
+    }
+
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "clipboard"
+        description: "Show the clipboard history"
+        onPressed: root.toggleLauncherMode("clipboard")
+    }
+
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "windows"
+        description: "Switch between open windows"
+        onPressed: root.toggleLauncherMode("windows")
     }
 
     // qmllint disable unresolved-type

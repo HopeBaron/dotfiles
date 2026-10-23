@@ -24,7 +24,30 @@ Searcher {
 
         model: {
             const enableDangerous = GlobalConfig.launcher.enableDangerousActions;
-            return GlobalConfig.launcher.actions.values.filter(a => a.enabled && (enableDangerous || !a.dangerous));
+            const actions = GlobalConfig.launcher.actions.values.filter(a => a.enabled && (enableDangerous || !a.dangerous));
+            // Built in here rather than in the plugin's defaults, so no rebuild is needed.
+            actions.push({
+                name: "Shortcuts",
+                icon: "keyboard",
+                description: "Show the keybind cheatsheet",
+                command: ["autocomplete", "shortcut"],
+                enabled: true
+            });
+            actions.push({
+                name: "Clipboard",
+                icon: "content_paste",
+                description: "Browse and paste the clipboard history",
+                command: ["autocomplete", "clipboard"],
+                enabled: true
+            });
+            actions.push({
+                name: "Windows",
+                icon: "tab",
+                description: "Switch to an open window",
+                command: ["autocomplete", "windows"],
+                enabled: true
+            });
+            return actions;
         }
 
         Action {}

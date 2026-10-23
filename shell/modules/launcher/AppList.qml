@@ -29,7 +29,7 @@ StyledListView {
     function stateForText(text: string): string {
         const prefix = GlobalConfig.launcher.actionPrefix;
         if (text.startsWith(prefix)) {
-            for (const action of ["calc", "scheme", "variant"])
+            for (const action of ["calc", "scheme", "variant", "shortcut", "clipboard", "windows"])
                 if (text.startsWith(`${prefix}${action} `))
                     return action;
 
@@ -49,12 +49,34 @@ StyledListView {
             return Schemes.query(text);
         case "variant":
             return M3Variants.query(text);
+        case "shortcut":
+            return Cheatsheet.query(text);
+        case "clipboard":
+            return Clipboard.query(text);
+        case "windows":
+            return Windows.query(text);
         default:
             return Apps.search(text);
         }
     }
 
+    // The windows list moves focus to each row as you highlight it.
+    readonly property bool windowsMode: state === "windows"
+
+    onWindowsModeChanged: {
+        screenState.liveFocus = windowsMode && screenState.launcher;
+        if (screenState.liveFocus)
+            Windows.begin();
+    }
+
+    onCurrentIndexChanged: {
+        if (windowsMode && screenState.launcher)
+            windowModel.values[currentIndex]?.preview();
+    }
+
     model: ScriptModel {
+        id: windowModel
+
         values: root.resultsForText(root.displayText)
         onValuesChanged: root.currentIndex = 0
     }
@@ -87,6 +109,8 @@ StyledListView {
     onStateChanged: {
         if (state === "scheme" || state === "variant")
             Schemes.reload();
+        else if (state === "clipboard")
+            Clipboard.reload();
     }
 
     Component.onCompleted: displayText = search.text
@@ -125,6 +149,27 @@ StyledListView {
 
             PropertyChanges {
                 root.delegate: variantItem
+            }
+        },
+        State {
+            name: "shortcut"
+
+            PropertyChanges {
+                root.delegate: shortcutItem
+            }
+        },
+        State {
+            name: "clipboard"
+
+            PropertyChanges {
+                root.delegate: clipboardItem
+            }
+        },
+        State {
+            name: "windows"
+
+            PropertyChanges {
+                root.delegate: windowItem
             }
         }
     ]
@@ -280,6 +325,30 @@ StyledListView {
     }
 
     Component {
+        id: windowItem
+
+        WindowItem {
+            list: root
+        }
+    }
+
+    Component {
+        id: clipboardItem
+
+        ClipboardItem {
+            list: root
+        }
+    }
+
+    Component {
+        id: shortcutItem
+
+        ShortcutItem {
+            list: root
+        }
+    }
+
+    Component {
         id: variantItem
 
         VariantItem {
@@ -298,6 +367,11 @@ StyledListView {
     Connections {
         function onLauncherChanged() {
             root.syncDisplayText();
+            if (!root.screenState.launcher) {
+                root.screenState.liveFocus = false;
+                if (root.windowsMode)
+                    Windows.restore();
+            }
         }
 
         target: root.screenState
