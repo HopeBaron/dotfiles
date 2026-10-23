@@ -72,7 +72,8 @@ StyledWindow {
     // being previewed, and the search box must keep the keyboard.
     WlrLayershell.keyboardFocus: screenState.launcher && screenState.liveFocus ? WlrKeyboardFocus.Exclusive : screenState.launcher || screenState.session ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
-    mask: hasFullscreen ? emptyRegion : regions
+    // Over a fullscreen window the shell takes no input, except while one of its menus is open.
+    mask: hasFullscreen && !(screenState.launcher || screenState.session || screenState.sidebar || screenState.dashboard || screenState.utilities) ? emptyRegion : regions
 
     anchors.top: true
     anchors.bottom: true

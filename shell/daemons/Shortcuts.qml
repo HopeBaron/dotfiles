@@ -11,7 +11,9 @@ Scope {
     id: root
 
     property bool launcherInterrupted
-    readonly property bool hasFullscreen: Hypr.focusedWorkspace?.toplevels.values.some(t => t.lastIpcObject.fullscreen > 1) ?? false
+    // Upstream blocks the launcher, sidebar and the rest while a window is fullscreen; here they open anyway
+    // (drawn over it: general.showOverFullscreen in shell.json).
+    readonly property bool hasFullscreen: false
 
     // Open the launcher in one of its modes (">clipboard " and so on), or close it if it is open.
     function toggleLauncherMode(mode: string): void {

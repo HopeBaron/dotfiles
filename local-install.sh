@@ -122,9 +122,10 @@ step_dots() {
 
   # The bar stays hidden until you hover the left edge or something happens
   # (BarWrapper.qml reveals it briefly on workspace switches, urgent windows
-  # and notifications). Only written if you have no shell.json yet.
+  # and notifications), and the menus open over fullscreen windows. Only
+  # written if you have no shell.json yet.
   [[ -e "$CONFIG/caelestia/shell.json" ]] \
-    || printf '{\n    "bar": {\n        "persistent": false,\n        "showOnHover": true\n    }\n}\n' > "$CONFIG/caelestia/shell.json"
+    || printf '{\n    "general": {\n        "showOverFullscreen": true\n    },\n    "bar": {\n        "persistent": false,\n        "showOnHover": true\n    }\n}\n' > "$CONFIG/caelestia/shell.json"
 
   # What the manifest's post_install does for the shell.
   local state=${XDG_STATE_HOME:-$HOME/.local/state}/caelestia
