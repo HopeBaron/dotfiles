@@ -16,6 +16,7 @@ set -euo pipefail
 readonly REPO=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 readonly CONFIG=${XDG_CONFIG_HOME:-$HOME/.config}
 readonly DATA=${XDG_DATA_HOME:-$HOME/.local/share}/caelestia
+readonly SHELL_VERSION=2.5.0   # the release shell/ was copied after; shown in the shell, not used for anything else
 
 say()  { printf '\n\033[1;35m==>\033[0m %s\n' "$1"; }
 note() { printf '    %s\n' "$1"; }
@@ -54,8 +55,15 @@ step_shell() {
   local scratch
   scratch=$(mktemp -d)
   trap 'rm -rf "$scratch"' RETURN
+  # shell/ has no git metadata here, and its CMakeLists takes VERSION and
+  # GIT_REVISION from `git describe` / `git rev-parse` unless they are given:
+  # the version of the release it tracks, and the upstream commit recorded in
+  # UPSTREAM.md.
+  local revision
+  revision=$(awk -F'|' '/shell\//{gsub(/ /,"",$4); print $4}' "$REPO/UPSTREAM.md")
   ( cd "$REPO/shell"
     cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/ \
+      -DVERSION="$SHELL_VERSION" -DGIT_REVISION="${revision:-unknown}" \
       -DINSTALL_QSCONFDIR="$scratch/qs"
     cmake --build build
     sudo cmake --install build )
