@@ -8,6 +8,8 @@
 #   ./local-install.sh shell      build shell/, install its plugin, link the QML
 #   ./local-install.sh cli        install cli/ into a private venv, link `caelestia`
 #   ./local-install.sh dots       link hypr/ into ~/.config (the old one is kept aside)
+#   ./local-install.sh qt         optional: Qt/GTK theming packages (qtengine, Darkly, Papirus)
+#   ./local-install.sh check      verify everything above is in place; changes nothing
 #
 # Every step is safe to re-run. Nothing here is Caelestia-version-specific:
 # update by editing/pulling the folders and re-running the step you changed.
@@ -116,6 +118,55 @@ step_dots() {
   fi
 }
 
+# ---- qt / gtk theming (optional) -------------------------------------------
+
+# The manifest's "qt" and "gtk" components. hypr/ sets QT_QPA_PLATFORMTHEME to
+# qtengine, so Qt apps only follow the scheme once these are installed.
+step_qt() {
+  say "Qt and GTK theming"
+  sudo pacman -S --needed adw-gtk-theme papirus-icon-theme
+  yay -S --needed qtengine frameworkintegration darkly-bin papirus-folders
+}
+
+# ---- check ------------------------------------------------------------------
+
+step_check() {
+  local bad=0
+  ok()   { printf '  [32mok[0m   %s
+' "$1"; }
+  fail() { printf '  [31mMISSING[0m %s
+' "$1"; bad=$((bad + 1)); }
+  have() { if "$@" >/dev/null 2>&1; then return 0; else return 1; fi; }
+
+  say "Packages"
+  local p
+  for p in "${REPO_PACKAGES[@]}" "${AUR_PACKAGES[@]}"; do
+    have pacman -Qq "$p" && ok "$p" || fail "package $p"
+  done
+
+  say "Shell"
+  [[ -f /usr/lib/qt6/qml/Caelestia/qmldir ]] && ok "QML plugin installed" || fail "QML plugin (run: ./local-install.sh shell)"
+  [[ -f /usr/lib/caelestia/version ]]       && ok "version helper"       || fail "/usr/lib/caelestia/version"
+  [[ "$(readlink "$CONFIG/quickshell/caelestia" 2>/dev/null)" == "$REPO/shell" ]] \
+    && ok "$CONFIG/quickshell/caelestia -> shell/" || fail "QML link (run: ./local-install.sh shell)"
+
+  say "CLI"
+  have caelestia --help && ok "caelestia runs" || fail "caelestia command (run: ./local-install.sh cli)"
+
+  say "Hyprland"
+  [[ "$(readlink "$CONFIG/hypr" 2>/dev/null)" == "$REPO/hypr" ]] \
+    && ok "$CONFIG/hypr -> hypr/" || fail "hypr link (run: ./local-install.sh dots)"
+  [[ -f "${XDG_STATE_HOME:-$HOME/.local/state}/caelestia/scheme.json" ]] \
+    && ok "colour scheme set" || fail "scheme (run: caelestia scheme set -n caelestia)"
+
+  say "Running"
+  pgrep -f "qs -c caelestia|quickshell -c caelestia|-c caelestia" >/dev/null \
+    && ok "caelestia shell is running" || note "not running -- start it: caelestia shell -d"
+
+  echo
+  (( bad == 0 )) && echo "All set." || { echo "$bad item(s) missing."; return 1; }
+}
+
 main() {
   if (( $(id -u) == 0 )); then echo "run as your own user (sudo is used where needed)" >&2; exit 1; fi
   case "${1:-all}" in
@@ -123,6 +174,8 @@ main() {
     shell)    step_shell ;;
     cli)      step_cli ;;
     dots)     step_dots ;;
+    qt)       step_qt ;;
+    check)    step_check ;;
     all)      step_packages; step_cli; step_shell; step_dots
               say "Done. Log out and back in (or run: caelestia shell -d)." ;;
     *) sed -n '2,/^[^#]/{/^#/p}' "$0" | sed 's/^# \{0,1\}//'; exit 2 ;;
