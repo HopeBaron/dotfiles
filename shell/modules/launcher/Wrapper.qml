@@ -55,6 +55,7 @@ Item {
             screenState: root.screenState
             panels: root.panels
             maxHeight: root.maxHeight
+            maxWidth: root.screen.width - Config.border.thickness * 2
         }
     }
 }

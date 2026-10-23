@@ -15,6 +15,7 @@ Item {
     required property ScreenState screenState
     required property var panels
     required property real maxHeight
+    required property real maxWidth
 
     readonly property int padding: Tokens.padding.large
     readonly property int rounding: Tokens.rounding.extraLarge
@@ -39,6 +40,7 @@ Item {
             screenState: root.screenState
             panels: root.panels
             maxHeight: root.maxHeight - search.implicitHeight - root.padding * 3
+            maxWidth: root.maxWidth - root.padding * 2
             search: search
             padding: root.padding
             rounding: root.rounding
@@ -86,7 +88,22 @@ Item {
 
         Keys.onEscapePressed: root.screenState.launcher = false
 
+        // Alt+Delete in the clipboard list empties the history (pinned clips stay).
+        Keys.onDeletePressed: event => {
+            if ((event.modifiers & Qt.AltModifier) && list.currentList?.state === "clipboard") {
+                Clipboard.wipe();
+                event.accepted = true;
+            }
+        }
+
         Keys.onPressed: event => {
+            // Ctrl+Space: enlarge / shrink the clipboard image preview.
+            if ((event.modifiers & Qt.ControlModifier) && event.key === Qt.Key_Space && list.currentList?.state === "clipboard") {
+                Clipboard.previewExpanded = !Clipboard.previewExpanded;
+                event.accepted = true;
+                return;
+            }
+
             if (!GlobalConfig.launcher.vimKeybinds)
                 return;
 

@@ -1,12 +1,14 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
+import Quickshell.Widgets
 import Caelestia.Config
 import Caelestia.I18n
 import qs.components
 import qs.components.controls
 import qs.services
 import qs.utils
+import qs.modules.launcher.services
 
 Item {
     id: root
@@ -15,6 +17,7 @@ Item {
     required property ScreenState screenState
     required property var panels
     required property real maxHeight
+    required property real maxWidth
     required property SearchBar search
     required property int padding
     required property int rounding
@@ -22,6 +25,25 @@ Item {
     readonly property bool showWallpapers: search.text.startsWith(`${GlobalConfig.launcher.actionPrefix}wallpaper `)
     readonly property var currentList: showWallpapers ? wallpaperList.item : appList.item // Can be either ListView or PathView, so can't type properly
     property string animState: showWallpapers ? "wallpapers" : "apps"
+
+    // Clipboard mode: the highlighted entry, and room above the list to show it if it is an image.
+    readonly property var focusedClip: appList.item?.state === "clipboard" ? appList.item.currentItem?.modelData ?? null : null
+    readonly property bool showPreview: focusedClip?.image ?? false
+    readonly property real previewBaseHeight: Tokens.sizes.launcher.itemHeight * 6
+    // Expanded: the full width, and a bit taller (never past what the screen leaves after a few list rows).
+    readonly property bool previewFull: showPreview && Clipboard.previewExpanded
+    property real previewHeight: showPreview ? (Clipboard.previewExpanded ? Math.min(previewBaseHeight * 1.4, maxHeight - Tokens.sizes.launcher.itemHeight * 4) : previewBaseHeight) : 0
+
+    onFocusedClipChanged: {
+        if (focusedClip?.image)
+            Clipboard.preview(focusedClip);
+        else
+            Clipboard.previewExpanded = false;
+    }
+
+    Behavior on previewHeight {
+        Anim {}
+    }
 
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.bottom: parent.bottom
@@ -34,8 +56,8 @@ Item {
             name: "apps"
 
             PropertyChanges {
-                root.implicitWidth: root.Tokens.sizes.launcher.itemWidth
-                root.implicitHeight: Math.min(root.maxHeight, appList.implicitHeight > 0 ? appList.implicitHeight : empty.implicitHeight)
+                root.implicitWidth: root.previewFull ? root.maxWidth : root.Tokens.sizes.launcher.itemWidth
+                root.implicitHeight: Math.min(root.maxHeight, (appList.implicitHeight > 0 ? appList.implicitHeight : empty.implicitHeight) + root.previewHeight)
                 appList.active: true
             }
 
@@ -80,13 +102,76 @@ Item {
 
         active: false
 
-        anchors.fill: parent
+        anchors.top: parent.top
+        anchors.topMargin: root.previewHeight
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
 
         sourceComponent: AppList {
             objectName: "launcherAppList"
 
             search: root.search
             screenState: root.screenState
+        }
+    }
+
+    // Preview of the focused clipboard image.
+    ClippingRectangle {
+        id: preview
+
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.margins: Tokens.padding.small
+        height: Math.max(0, root.previewHeight - Tokens.padding.small * 2)
+
+        visible: root.previewHeight > 0
+        opacity: root.showPreview && Clipboard.previewReady && Clipboard.previewId === root.focusedClip?.id ? 1 : 0
+        radius: Tokens.rounding.large
+        color: Colours.palette.m3surfaceContainerHigh
+
+        Behavior on opacity {
+            Anim {
+                type: Anim.DefaultEffects
+            }
+        }
+
+        // Expand / shrink the preview (also Ctrl+Space).
+        StyledRect {
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.margins: Tokens.padding.normal
+            z: 1
+
+            color: Qt.alpha(Colours.palette.m3surface, 0.7)
+            radius: Tokens.rounding.full
+            implicitWidth: expandIcon.implicitWidth + Tokens.padding.small * 2
+            implicitHeight: implicitWidth
+
+            MaterialIcon {
+                id: expandIcon
+
+                anchors.centerIn: parent
+                text: Clipboard.previewExpanded ? "close_fullscreen" : "open_in_full"
+                color: Colours.palette.m3onSurface
+            }
+
+            StateLayer {
+                radius: Tokens.rounding.full
+                onClicked: Clipboard.previewExpanded = !Clipboard.previewExpanded
+            }
+        }
+
+        Image {
+            anchors.fill: parent
+            anchors.margins: Tokens.padding.small
+            source: Clipboard.previewSource
+            fillMode: Image.PreserveAspectFit
+            asynchronous: true
+            cache: false
+            sourceSize.width: width * 2
+            sourceSize.height: height * 2
         }
     }
 
