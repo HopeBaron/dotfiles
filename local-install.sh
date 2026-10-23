@@ -120,6 +120,12 @@ step_dots() {
   [[ -e "$CONFIG/caelestia/hypr-user.lua" ]] || : > "$CONFIG/caelestia/hypr-user.lua"
   note "$CONFIG/caelestia/ (hypr-vars.lua, hypr-user.lua): your overrides, never touched by updates"
 
+  # The bar stays hidden until you hover the left edge or something happens
+  # (BarWrapper.qml reveals it briefly on workspace switches, urgent windows
+  # and notifications). Only written if you have no shell.json yet.
+  [[ -e "$CONFIG/caelestia/shell.json" ]] \
+    || printf '{\n    "bar": {\n        "persistent": false,\n        "showOnHover": true\n    }\n}\n' > "$CONFIG/caelestia/shell.json"
+
   # What the manifest's post_install does for the shell.
   local state=${XDG_STATE_HOME:-$HOME/.local/state}/caelestia
   if [[ ! -f "$state/scheme.json" ]] && command -v caelestia >/dev/null; then
