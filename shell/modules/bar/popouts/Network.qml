@@ -41,6 +41,13 @@ ColumnLayout {
         toggle.onToggled: Nmcli.enableWifi(checked)
     }
 
+    WifiAdapterPicker {
+        visible: root.view === "wireless" && Nmcli.wirelessInterfaces.length > 1
+        Layout.preferredHeight: visible ? implicitHeight : 0
+        Layout.fillWidth: true
+        Layout.rightMargin: Tokens.padding.extraSmall
+    }
+
     StyledText {
         visible: root.view === "wireless"
         Layout.preferredHeight: visible ? implicitHeight : 0

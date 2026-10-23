@@ -57,8 +57,14 @@ PageBase {
             }
         }
 
-        ToggleRow {
+        WifiAdapterPicker {
+            Layout.fillWidth: true
             Layout.topMargin: Nmcli.hasAvailableEthernet ? Tokens.spacing.large : 0
+            Layout.bottomMargin: visible ? Tokens.spacing.small : 0
+        }
+
+        ToggleRow {
+            Layout.topMargin: Nmcli.hasAvailableEthernet || Nmcli.wirelessInterfaces.length > 1 ? Tokens.spacing.large : 0
             first: true
             text: Tr.tr("Wi-Fi")
             font: Tokens.font.body.medium

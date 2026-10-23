@@ -15,6 +15,9 @@ Singleton {
     property bool isConnected: false
     readonly property bool connecting: wirelessInterfaces.some(i => isConnectingState(i.state))
     property string activeInterface: ""
+    // Wi-Fi adapter the network list, connect and disconnect act on, so each adapter can be used on its own.
+    property string selectedDevice: ""
+    readonly property string wifiDevice: wirelessInterfaces.some(i => i.device === selectedDevice) ? selectedDevice : (wirelessInterfaces[0]?.device ?? "")
     property string activeConnection: ""
     property bool wifiEnabled: true
     readonly property bool scanning: rescanProc.running
@@ -56,7 +59,7 @@ Singleton {
     readonly property string connectionListFields: "NAME,TYPE"
     readonly property string wirelessSsidField: "802-11-wireless.ssid"
     readonly property string networkListFields: "SSID,SIGNAL,SECURITY"
-    readonly property string networkDetailFields: "ACTIVE,SIGNAL,FREQ,SSID,BSSID,SECURITY"
+    readonly property string networkDetailFields: "ACTIVE,SIGNAL,FREQ,SSID,BSSID,SECURITY,DEVICE"
     readonly property string securityKeyMgmt: "802-11-wireless-security.key-mgmt"
     readonly property string securityPsk: "802-11-wireless-security.psk"
     readonly property string keyMgmtWpaPsk: "wpa-psk"
@@ -95,7 +98,8 @@ Singleton {
                 frequency: parseInt(net[2] || "0", 10) || 0,
                 ssid: (net[3]?.replace(rep2, ":") ?? "").trim(),
                 bssid: (net[4]?.replace(rep2, ":") ?? "").trim(),
-                security: (net[5] ?? "").trim()
+                security: (net[5] ?? "").trim(),
+                device: (net[6] ?? "").trim()
             };
         }).filter(n => n.ssid && n.ssid.length > 0);
 
@@ -456,6 +460,8 @@ Singleton {
         if (password && password.length > 0) {
             cmd.push(root.connectionParamPassword, password);
         }
+        if (root.wifiDevice)
+            cmd.push(root.connectionParamIfname, root.wifiDevice);
         executeCommand(cmd, result => {
             if (result.needsPassword && callback) {
                 if (callback)
@@ -519,7 +525,10 @@ Singleton {
     }
 
     function activateConnection(connectionName: string, callback: var): void {
-        executeCommand([root.nmcliCommandConnection, "up", connectionName], result => {
+        const cmd = [root.nmcliCommandConnection, "up", connectionName];
+        if (root.wifiDevice)
+            cmd.push(root.connectionParamIfname, root.wifiDevice);
+        executeCommand(cmd, result => {
             if (callback)
                 callback(result);
         });
@@ -819,7 +828,14 @@ Singleton {
     }
 
     function disconnectFromNetwork(): void {
-        if (active && active.ssid) {
+        if (root.wifiDevice) {
+            executeCommand([root.nmcliCommandDevice, "disconnect", root.wifiDevice], result => {
+                if (result.success) {
+                    getNetworks(() => {});
+                    getWirelessInterfaces(() => {});
+                }
+            });
+        } else if (active && active.ssid) {
             executeCommand([root.nmcliCommandConnection, "down", active.ssid], result => {
                 if (result.success) {
                     getNetworks(() => {});
@@ -922,6 +938,11 @@ Singleton {
         });
     }
 
+    function selectDevice(device: string): void {
+        selectedDevice = device;
+        getNetworks(() => {});
+    }
+
     function rescanWifi(): void {
         rescanProc.running = true;
     }
@@ -973,7 +994,7 @@ Singleton {
                 return;
             }
 
-            const allNetworks = parseNetworkOutput(result.output);
+            const allNetworks = parseNetworkOutput(result.output).filter(n => !root.wifiDevice || n.device === root.wifiDevice);
             const networks = deduplicateNetworks(allNetworks);
             const rNetworks = root.networks;
 
@@ -1428,7 +1449,7 @@ Singleton {
 
     Component.onCompleted: {
         getWifiStatus(() => {});
-        getNetworks(() => {});
+        getWirelessInterfaces(() => getNetworks(() => {}));
         loadSavedConnections(() => {});
         getEthernetInterfaces(() => {});
 
@@ -1811,6 +1832,7 @@ Singleton {
         readonly property int frequency: lastIpcObject.frequency
         readonly property bool active: lastIpcObject.active
         readonly property string security: lastIpcObject.security
+        readonly property string device: lastIpcObject.device ?? ""
         readonly property bool isSecure: security.length > 0
     }
 
