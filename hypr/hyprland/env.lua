@@ -1,5 +1,9 @@
 local vars = require("variables")
 
+-- The `caelestia` command lives in ~/.local/bin, which a login started from a
+-- display manager does not have on PATH (only shell rc files add it).
+hl.env("PATH", os.getenv("HOME") .. "/.local/bin:" .. (os.getenv("PATH") or "/usr/bin"))
+
 -- Themes
 hl.env("QT_QPA_PLATFORMTHEME", "qtengine")
 hl.env("QT_WAYLAND_DISABLE_WINDOWDECORATION", "1")
