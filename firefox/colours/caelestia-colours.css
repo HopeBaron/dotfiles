@@ -1,0 +1,21 @@
+/* TEMPLATE: Caelestia fills the {{ }} on every scheme change and writes the result to
+   ~/.local/state/caelestia/theme/firefox-colours.css, which the profile links as
+   chrome/caelestia-colours.css. Imported by userChrome.css and userContent.css. */
+:root {
+    --cae-bg: #{{ background.hex }};
+    --cae-surface: #{{ surface.hex }};
+    --cae-low: #{{ surfaceContainerLow.hex }};
+    --cae-container: #{{ surfaceContainer.hex }};
+    --cae-high: #{{ surfaceContainerHigh.hex }};
+    --cae-highest: #{{ surfaceContainerHighest.hex }};
+    --cae-on-surface: #{{ onSurface.hex }};
+    --cae-on-variant: #{{ onSurfaceVariant.hex }};
+    --cae-outline: #{{ outline.hex }};
+    --cae-outline-variant: #{{ outlineVariant.hex }};
+    --cae-primary: #{{ primary.hex }};
+    --cae-on-primary: #{{ onPrimary.hex }};
+    --cae-primary-container: #{{ primaryContainer.hex }};
+    --cae-on-primary-container: #{{ onPrimaryContainer.hex }};
+    --cae-secondary-container: #{{ secondaryContainer.hex }};
+    --cae-on-secondary-container: #{{ onSecondaryContainer.hex }};
+}

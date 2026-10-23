@@ -1,0 +1,31 @@
+/* Firefox's own pages (new tab, settings, about:*) in the Caelestia scheme. */
+@import "caelestia-colours.css";
+
+@-moz-document url-prefix("about:"), url-prefix("chrome:"), url-prefix("moz-extension:") {
+    :root {
+        --in-content-page-background: var(--cae-bg) !important;
+        --in-content-page-color: var(--cae-on-surface) !important;
+        --in-content-text-color: var(--cae-on-surface) !important;
+        --in-content-deemphasized-text: var(--cae-on-variant) !important;
+        --in-content-box-background: var(--cae-container) !important;
+        --in-content-box-background-hover: var(--cae-high) !important;
+        --in-content-box-border-color: var(--cae-outline-variant) !important;
+        --in-content-primary-button-background: var(--cae-primary) !important;
+        --in-content-primary-button-background-hover: var(--cae-primary) !important;
+        --in-content-primary-button-text-color: var(--cae-on-primary) !important;
+        --in-content-button-background: var(--cae-highest) !important;
+        --in-content-button-text-color: var(--cae-on-surface) !important;
+        --in-content-accent-color: var(--cae-primary) !important;
+        --in-content-link-color: var(--cae-primary) !important;
+        --in-content-border-focus: var(--cae-primary) !important;
+        --in-content-item-selected: var(--cae-primary-container) !important;
+        --in-content-item-selected-text: var(--cae-on-primary-container) !important;
+        --newtab-background-color: var(--cae-bg) !important;
+        --newtab-background-color-secondary: var(--cae-container) !important;
+        --newtab-text-primary-color: var(--cae-on-surface) !important;
+        --newtab-primary-action-background: var(--cae-primary) !important;
+        --background-color-canvas: var(--cae-bg) !important;
+        --color-accent-primary: var(--cae-primary) !important;
+        accent-color: var(--cae-primary) !important;
+    }
+}

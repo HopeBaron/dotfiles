@@ -9,6 +9,7 @@
 #   ./local-install.sh cli        install cli/ into a private venv, link `caelestia`
 #   ./local-install.sh dots       link hypr/ into ~/.config (the old one is kept aside)
 #   ./local-install.sh qt         optional: Qt/GTK theming packages (qtengine, Darkly, Papirus)
+#   ./local-install.sh firefox    colour Firefox from the scheme (close Firefox first; restart it after a scheme change)
 #   ./local-install.sh sddm       optional: the Caelestia login screen (asks for sudo; re-run after a scheme change)
 #   ./local-install.sh check      verify everything above is in place; changes nothing
 #
@@ -144,6 +145,50 @@ step_qt() {
   yay -S --needed qtengine frameworkintegration darkly-bin papirus-folders
 }
 
+# ---- firefox (optional) -----------------------------------------------------
+
+# Firefox's own UI and pages in the scheme's colours, with no extension: a
+# template (firefox/colours/caelestia-colours.css) is rendered by `caelestia`
+# on every scheme change, and each profile's userChrome.css / userContent.css
+# import the result. Firefox only reads stylesheets at startup, so restart it
+# after changing the scheme.
+step_firefox() {
+  say "Firefox colours"
+  local src=$REPO/firefox/colours theme=${XDG_STATE_HOME:-$HOME/.local/state}/caelestia/theme
+
+  mkdir -p "$CONFIG/caelestia/templates"
+  ln -sfn "$src/caelestia-colours.css" "$CONFIG/caelestia/templates/firefox-colours.css"
+  note "template: $CONFIG/caelestia/templates/firefox-colours.css"
+
+  # Render it now, with the scheme already in use.
+  if command -v caelestia >/dev/null; then
+    local name flavour variant
+    { read -r name; read -r flavour; read -r variant; } < <(caelestia scheme get -nfv)
+    caelestia scheme set -n "$name" -f "$flavour" -v "$variant" || true
+  fi
+
+  local root profile found=0
+  for root in "$HOME/.config/mozilla/firefox" "$HOME/.mozilla/firefox"; do
+    for profile in "$root"/*.default*; do
+      [[ -d "$profile" ]] || continue
+      found=1
+      mkdir -p "$profile/chrome"
+      local file
+      for file in chrome/userChrome.css:userChrome.css chrome/userContent.css:userContent.css user.js:user.js; do
+        local dest=$profile/${file%%:*} from=$src/${file##*:}
+        # Leftovers from the old setup are dropped; anything else is kept aside.
+        if [[ -e "$dest" && ! -L "$dest" ]]; then
+          if grep -qi mars "$dest"; then rm -f "$dest"; else mv "$dest" "$dest.bak.$(date +%s)"; fi
+        fi
+        ln -sfn "$from" "$dest"
+      done
+      ln -sfn "$theme/firefox-colours.css" "$profile/chrome/caelestia-colours.css"
+      note "$profile"
+    done
+  done
+  (( found )) || note "no Firefox profile found (start Firefox once, then run this again)"
+}
+
 # ---- login screen (optional) -----------------------------------------------
 
 step_sddm() {
@@ -199,6 +244,7 @@ main() {
     cli)      step_cli ;;
     dots)     step_dots ;;
     qt)       step_qt ;;
+    firefox)  step_firefox ;;
     sddm)     step_sddm ;;
     check)    step_check ;;
     all)      step_packages; step_cli; step_shell; step_dots

@@ -1,0 +1,55 @@
+/* Firefox's own UI in the Caelestia scheme. Colours only: no layout changes. */
+@import "caelestia-colours.css";
+
+:root {
+    --toolbar-bgcolor: var(--cae-surface) !important;
+    --toolbar-color: var(--cae-on-surface) !important;
+    --toolbarbutton-icon-fill: var(--cae-on-surface) !important;
+    --toolbarbutton-hover-background: var(--cae-highest) !important;
+    --toolbarbutton-active-background: var(--cae-high) !important;
+    --toolbar-field-background-color: var(--cae-container) !important;
+    --toolbar-field-color: var(--cae-on-surface) !important;
+    --toolbar-field-border-color: transparent !important;
+    --toolbar-field-focus-background-color: var(--cae-high) !important;
+    --toolbar-field-focus-color: var(--cae-on-surface) !important;
+    --toolbar-field-focus-border-color: var(--cae-primary) !important;
+    --tab-selected-bgcolor: var(--cae-container) !important;
+    --tab-selected-textcolor: var(--cae-on-surface) !important;
+    --tab-selected-color: var(--cae-on-surface) !important;
+    --tab-loading-fill: var(--cae-primary) !important;
+    --lwt-accent-color: var(--cae-bg) !important;
+    --lwt-text-color: var(--cae-on-surface) !important;
+    --arrowpanel-background: var(--cae-container) !important;
+    --arrowpanel-color: var(--cae-on-surface) !important;
+    --arrowpanel-border-color: var(--cae-outline-variant) !important;
+    --arrowpanel-dimmed: var(--cae-highest) !important;
+    --panel-separator-color: var(--cae-outline-variant) !important;
+    --autocomplete-popup-background: var(--cae-container) !important;
+    --autocomplete-popup-color: var(--cae-on-surface) !important;
+    --autocomplete-popup-highlight-background: var(--cae-primary) !important;
+    --autocomplete-popup-highlight-color: var(--cae-on-primary) !important;
+    --urlbarView-highlight-background: var(--cae-highest) !important;
+    --urlbarView-highlight-color: var(--cae-on-surface) !important;
+    --focus-outline-color: var(--cae-primary) !important;
+    --button-primary-bgcolor: var(--cae-primary) !important;
+    --button-primary-color: var(--cae-on-primary) !important;
+    --button-bgcolor: var(--cae-highest) !important;
+    --button-color: var(--cae-on-surface) !important;
+    --sidebar-background-color: var(--cae-surface) !important;
+    --sidebar-text-color: var(--cae-on-surface) !important;
+    accent-color: var(--cae-primary) !important;
+}
+
+#navigator-toolbox,
+#nav-bar,
+#TabsToolbar,
+#PersonalToolbar,
+#titlebar {
+    background-color: var(--cae-bg) !important;
+    color: var(--cae-on-surface) !important;
+    border-color: transparent !important;
+}
+#nav-bar { background-color: var(--cae-surface) !important; }
+.tabbrowser-tab[selected] .tab-background { background-color: var(--cae-container) !important; }
+.tab-label { color: var(--cae-on-variant) !important; }
+.tabbrowser-tab[selected] .tab-label { color: var(--cae-on-surface) !important; }
