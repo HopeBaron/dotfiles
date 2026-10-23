@@ -14,3 +14,4 @@
 
 # local wallpapers (images, not tracked)
 /wallpapers/
+/shell/build/
