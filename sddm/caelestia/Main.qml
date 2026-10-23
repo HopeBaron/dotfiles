@@ -129,7 +129,7 @@ Rectangle {
                 color: field.placeholderColor
                 font { family: root.fontFamily; pixelSize: 16 }
                 opacity: input.text.length === 0 ? 1 : 0
-                Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on opacity { NumberAnimation { duration: 300 } }
                 Behavior on color { ColorAnimation { duration: 150 } }
             }
 
@@ -145,7 +145,7 @@ Rectangle {
                     height: parent.height
                     spacing: field.secret ? 4 : 0
                     x: width > clipArea.width ? clipArea.width - width : (clipArea.width - width) / 2
-                    Behavior on x { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+                    Behavior on x { NumberAnimation { duration: 300; easing.type: Easing.OutCubic } }
 
                     Repeater {
                         model: input.text.length
@@ -161,11 +161,11 @@ Rectangle {
                             scale: shown ? 1 : 0
                             opacity: shown ? 1 : 0
 
-                            Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-                            Behavior on scale { NumberAnimation { duration: 260; easing.type: Easing.OutBack; easing.overshoot: 2 } }
-                            Behavior on opacity { NumberAnimation { duration: 120 } }
+                            Behavior on width { NumberAnimation { duration: 420; easing.type: Easing.OutCubic } }
+                            Behavior on scale { NumberAnimation { duration: 480; easing.type: Easing.OutBack; easing.overshoot: 2 } }
+                            Behavior on opacity { NumberAnimation { duration: 240 } }
 
-                            Timer { interval: 180; running: true; onTriggered: ch.settled = true }
+                            Timer { interval: 360; running: true; onTriggered: ch.settled = true }
                             Component.onCompleted: shown = true
 
                             // Password: starts as an odd shape, then relaxes to a dot.
@@ -177,9 +177,9 @@ Rectangle {
                                 radius: ch.settled ? width / 2 : 4
                                 rotation: ch.settled ? 0 : [45, 20, -25, 0][ch.index % 4]
                                 color: config.onSurface
-                                Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-                                Behavior on radius { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
-                                Behavior on rotation { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                                Behavior on width { NumberAnimation { duration: 420; easing.type: Easing.OutCubic } }
+                                Behavior on radius { NumberAnimation { duration: 420; easing.type: Easing.OutCubic } }
+                                Behavior on rotation { NumberAnimation { duration: 420; easing.type: Easing.OutCubic } }
                             }
 
                             // Account: the letter itself.
