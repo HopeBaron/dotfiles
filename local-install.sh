@@ -54,7 +54,8 @@ step_shell() {
   # files cmake also wants to install go to a scratch directory and are dropped.
   local scratch
   scratch=$(mktemp -d)
-  trap 'rm -rf "$scratch"' RETURN
+  # `cmake --install` runs as root, so what it wrote there belongs to root.
+  trap 'sudo rm -rf "$scratch"' RETURN
   # shell/ has no git metadata here, and its CMakeLists takes VERSION and
   # GIT_REVISION from `git describe` / `git rev-parse` unless they are given:
   # the version of the release it tracks, and the upstream commit recorded in
