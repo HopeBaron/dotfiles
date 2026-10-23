@@ -27,6 +27,7 @@ MouseArea {
     property int thisSideY: Menu.Top
     property real marginX
     property real marginY
+    property real menuWidth // 0 sizes the menu to its items
 
     property list<MenuItem> items
     property MenuItem active: items[0] ?? null
@@ -85,7 +86,7 @@ MouseArea {
         radius: Tokens.rounding.large
         level: 2
 
-        implicitWidth: Math.max(200, column.implicitWidth + column.anchors.margins * 2)
+        implicitWidth: root.menuWidth > 0 ? root.menuWidth : Math.max(200, column.implicitWidth + column.anchors.margins * 2)
         implicitHeight: column.implicitHeight + column.anchors.margins * 2
 
         transform: Scale {

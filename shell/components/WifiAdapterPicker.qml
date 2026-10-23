@@ -66,6 +66,7 @@ StyledRect {
         attachSideX: Menu.Left
         thisSideX: Menu.Left
         marginY: Tokens.spacing.small
+        menuWidth: root.width
         items: adapters.instances
         active: items.find(i => i.value === Nmcli.wifiDevice) ?? null
         onItemSelected: item => Nmcli.selectDevice(item.value)
