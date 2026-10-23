@@ -61,7 +61,7 @@ hl.window_rule({
 
 -- Opaque apps
 tagged_rule(opaque_tag, {
-    "foot",                          -- Terminal
+    "foot|kitty",                    -- Terminal
     "equibop",                       -- Discord client
     "org.quickshell",                -- Quickshell
     "feh|imv|swappy",                -- Image viewers
