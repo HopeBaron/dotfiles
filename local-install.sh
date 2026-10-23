@@ -126,7 +126,7 @@ step_dots() {
   # and notifications), and the menus open over fullscreen windows. Only
   # written if you have no shell.json yet.
   [[ -e "$CONFIG/caelestia/shell.json" ]] \
-    || printf '{\n    "general": {\n        "showOverFullscreen": true\n    },\n    "bar": {\n        "persistent": false,\n        "showOnHover": true\n    }\n}\n' > "$CONFIG/caelestia/shell.json"
+    || printf '{\n    "general": {\n        "showOverFullscreen": true\n    },\n    "bar": {\n        "persistent": false,\n        "showOnHover": true\n    },\n    "lock": {\n        "hideNotifs": true\n    }\n}\n' > "$CONFIG/caelestia/shell.json"
 
   # What the manifest's post_install does for the shell.
   local state=${XDG_STATE_HOME:-$HOME/.local/state}/caelestia
