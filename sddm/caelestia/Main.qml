@@ -28,6 +28,9 @@ Rectangle {
         sddm.login(username.text, password.text, sessionIndex)
     }
 
+    readonly property alias username: userField
+    readonly property alias password: passwordField
+
     Component.onCompleted: (username.text === "" ? username : password).forceActiveFocus()
 
     // Invisible mirror of the session model, so names can be read by index.
@@ -68,6 +71,131 @@ Rectangle {
         color: config.onSurfaceVariant
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
+    }
+
+    // One look for both fields, as on the shell's lock screen: the placeholder
+    // sits centred and fades out, and each typed character pops in (a shape for
+    // the password, the letter itself for the account) and settles.
+    component Field: FocusScope {
+        id: field
+        property string icon
+        property string placeholder
+        property color placeholderColor: config.outline
+        property bool secret: false
+        property bool error: false
+        property alias text: input.text
+        default property alias extra: bg.data
+        signal accepted()
+        signal escaped()
+        signal down()
+        signal tabbed()
+        signal backtabbed()
+        signal edited()
+
+        width: parent.width
+        height: 52
+
+        Rectangle {
+            id: bg
+            anchors.fill: parent
+            radius: 26
+            color: config.surfaceContainerHigh
+            border.width: 2
+            border.color: field.error ? config.error : "transparent"
+            Behavior on border.color { ColorAnimation { duration: 150 } }
+
+            MouseArea { anchors.fill: parent; cursorShape: Qt.IBeamCursor; onClicked: input.forceActiveFocus() }
+
+            Icon { x: 14; anchors.verticalCenter: parent.verticalCenter; text: field.icon }
+
+            TextInput {
+                id: input
+                anchors.fill: parent
+                opacity: 0
+                focus: true
+                echoMode: field.secret ? TextInput.Password : TextInput.Normal
+                onTextEdited: field.edited()
+                Keys.onReturnPressed: field.accepted()
+                Keys.onEnterPressed: field.accepted()
+                Keys.onEscapePressed: field.escaped()
+                Keys.onDownPressed: field.down()
+                Keys.onTabPressed: field.tabbed()
+                Keys.onBacktabPressed: field.backtabbed()
+            }
+
+            Text {
+                anchors.centerIn: parent
+                text: field.placeholder
+                color: field.placeholderColor
+                font { family: root.fontFamily; pixelSize: 16 }
+                opacity: input.text.length === 0 ? 1 : 0
+                Behavior on opacity { NumberAnimation { duration: 150 } }
+                Behavior on color { ColorAnimation { duration: 150 } }
+            }
+
+            Item {
+                id: clipArea
+                anchors.fill: parent
+                anchors.leftMargin: 52
+                anchors.rightMargin: 52
+                clip: true
+
+                Row {
+                    id: chars
+                    height: parent.height
+                    spacing: field.secret ? 4 : 0
+                    x: width > clipArea.width ? clipArea.width - width : (clipArea.width - width) / 2
+                    Behavior on x { NumberAnimation { duration: 160; easing.type: Easing.OutCubic } }
+
+                    Repeater {
+                        model: input.text.length
+                        delegate: Item {
+                            id: ch
+                            required property int index
+                            // Pops in oversized, then settles a moment later.
+                            property bool settled: false
+                            property bool shown: false
+
+                            height: chars.height
+                            width: field.secret ? (settled ? 11 : 16) : letter.implicitWidth
+                            scale: shown ? 1 : 0
+                            opacity: shown ? 1 : 0
+
+                            Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                            Behavior on scale { NumberAnimation { duration: 260; easing.type: Easing.OutBack; easing.overshoot: 2 } }
+                            Behavior on opacity { NumberAnimation { duration: 120 } }
+
+                            Timer { interval: 180; running: true; onTriggered: ch.settled = true }
+                            Component.onCompleted: shown = true
+
+                            // Password: starts as an odd shape, then relaxes to a dot.
+                            Rectangle {
+                                visible: field.secret
+                                anchors.centerIn: parent
+                                width: ch.settled ? 11 : 16
+                                height: width
+                                radius: ch.settled ? width / 2 : 4
+                                rotation: ch.settled ? 0 : [45, 20, -25, 0][ch.index % 4]
+                                color: config.onSurface
+                                Behavior on width { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                                Behavior on radius { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                                Behavior on rotation { NumberAnimation { duration: 220; easing.type: Easing.OutCubic } }
+                            }
+
+                            // Account: the letter itself.
+                            Text {
+                                id: letter
+                                visible: !field.secret
+                                anchors.centerIn: parent
+                                text: input.text[ch.index] ?? ""
+                                color: config.onSurface
+                                font { family: root.fontFamily; pixelSize: 16 }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     Timer {
@@ -117,42 +245,17 @@ Rectangle {
 
             // Account, prefilled with the last user. The chevron opens the
             // list; typing works for any account ("Other…").
-            Rectangle {
+            Field {
                 id: userField
-                width: parent.width
-                height: 52
-                radius: 26
-                color: config.surfaceContainerHigh
+                icon: "account_circle"
+                placeholder: "Username"
+                text: userModel.lastUser
+                enabled: !root.checking
+                onAccepted: password.forceActiveFocus()
+                onTabbed: password.forceActiveFocus()
+                onDown: userMenu.visible = true
+                onEscaped: root.closeMenus()
 
-                Icon { x: 14; anchors.verticalCenter: parent.verticalCenter; text: "account_circle" }
-                TextInput {
-                    id: username
-                    anchors.fill: parent
-                    anchors.leftMargin: 52
-                    anchors.rightMargin: 52
-                    verticalAlignment: TextInput.AlignVCenter
-                    text: userModel.lastUser
-                    color: config.onSurface
-                    selectionColor: config.primary
-                    selectedTextColor: config.onPrimary
-                    font { family: root.fontFamily; pixelSize: 16 }
-                    clip: true
-                    enabled: !root.checking
-                    KeyNavigation.tab: password
-                    Keys.onReturnPressed: password.forceActiveFocus()
-                    Keys.onEnterPressed: password.forceActiveFocus()
-                    Keys.onDownPressed: userMenu.visible = true
-                    Keys.onEscapePressed: root.closeMenus()
-                }
-                Text {
-                    anchors.fill: parent
-                    anchors.leftMargin: 52
-                    verticalAlignment: Text.AlignVCenter
-                    visible: username.text.length === 0
-                    text: "Username"
-                    color: config.outline
-                    font { family: root.fontFamily; pixelSize: 16 }
-                }
                 Icon {
                     anchors.right: parent.right
                     anchors.rightMargin: 14
@@ -174,51 +277,24 @@ Rectangle {
             }
 
             // Outlined in the error colour on failure.
-            Rectangle {
-                width: parent.width
-                height: 52
-                radius: 26
-                color: config.surfaceContainerHigh
-                border.width: 2
-                border.color: root.failed ? config.error : "transparent"
-                Behavior on border.color { ColorAnimation { duration: 150 } }
-
-                Icon { x: 14; anchors.verticalCenter: parent.verticalCenter; text: "lock" }
-                TextInput {
-                    id: password
-                    anchors.fill: parent
-                    anchors.leftMargin: 52
-                    anchors.rightMargin: 16
-                    verticalAlignment: TextInput.AlignVCenter
-                    echoMode: TextInput.Password
-                    passwordCharacter: "•"
-                    color: config.primary
-                    selectionColor: config.primary
-                    selectedTextColor: config.onPrimary
-                    font { family: root.fontFamily; pixelSize: 16 }
-                    clip: true
-                    enabled: !root.checking
-                    KeyNavigation.backtab: username
-                    onTextEdited: root.failed = false
-                    Keys.onReturnPressed: root.login()
-                    Keys.onEnterPressed: root.login()
-                    Keys.onEscapePressed: {
-                        if (userMenu.visible || sessionMenu.visible) root.closeMenus()
-                        else text = ""
-                    }
-                }
-                Text {
-                    anchors.fill: parent
-                    anchors.leftMargin: 52
-                    verticalAlignment: Text.AlignVCenter
-                    visible: password.text.length === 0
-                    text: root.failed ? "Login failed"
-                        : keyboard.capsLock ? "Caps Lock is on"
-                        : "Password"
-                    color: root.failed ? config.error
-                         : keyboard.capsLock ? config.tertiary
-                         : config.outline
-                    font { family: root.fontFamily; pixelSize: 16 }
+            Field {
+                id: passwordField
+                icon: "lock"
+                secret: true
+                error: root.failed
+                enabled: !root.checking
+                placeholder: root.failed ? "Login failed"
+                    : keyboard.capsLock ? "Caps Lock is on"
+                    : "Password"
+                placeholderColor: root.failed ? config.error
+                    : keyboard.capsLock ? config.tertiary
+                    : config.outline
+                onEdited: root.failed = false
+                onAccepted: root.login()
+                onBacktabbed: username.forceActiveFocus()
+                onEscaped: {
+                    if (userMenu.visible || sessionMenu.visible) root.closeMenus()
+                    else text = ""
                 }
             }
 
