@@ -111,6 +111,14 @@ step_dots() {
   ln -sfn "$REPO/hypr" "$target"
   note "$target -> $REPO/hypr"
 
+  # hypr/hyprland.lua loads ~/.config/caelestia/hypr-vars.lua and hypr-user.lua
+  # (your overrides) and cannot create them if the folder is missing -- it then
+  # trips Hyprland's emergency mode, with no binds at all.
+  mkdir -p "$CONFIG/caelestia"
+  [[ -e "$CONFIG/caelestia/hypr-vars.lua" ]] || printf 'return {}\n' > "$CONFIG/caelestia/hypr-vars.lua"
+  [[ -e "$CONFIG/caelestia/hypr-user.lua" ]] || : > "$CONFIG/caelestia/hypr-user.lua"
+  note "$CONFIG/caelestia/ (hypr-vars.lua, hypr-user.lua): your overrides, never touched by updates"
+
   # What the manifest's post_install does for the shell.
   local state=${XDG_STATE_HOME:-$HOME/.local/state}/caelestia
   if [[ ! -f "$state/scheme.json" ]] && command -v caelestia >/dev/null; then
@@ -154,6 +162,7 @@ step_check() {
   have caelestia --help && ok "caelestia runs" || fail "caelestia command (run: ./local-install.sh cli)"
 
   say "Hyprland"
+  [[ -f "$CONFIG/caelestia/hypr-vars.lua" ]] && ok "$CONFIG/caelestia/hypr-vars.lua" || fail "overrides folder (run: ./local-install.sh dots)"
   [[ "$(readlink "$CONFIG/hypr" 2>/dev/null)" == "$REPO/hypr" ]] \
     && ok "$CONFIG/hypr -> hypr/" || fail "hypr link (run: ./local-install.sh dots)"
   [[ -f "${XDG_STATE_HOME:-$HOME/.local/state}/caelestia/scheme.json" ]] \
