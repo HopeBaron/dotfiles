@@ -60,20 +60,6 @@ StyledListView {
         }
     }
 
-    // The windows list moves focus to each row as you highlight it.
-    readonly property bool windowsMode: state === "windows"
-
-    onWindowsModeChanged: {
-        screenState.liveFocus = windowsMode && screenState.launcher;
-        if (screenState.liveFocus)
-            Windows.begin();
-    }
-
-    onCurrentIndexChanged: {
-        if (windowsMode && screenState.launcher)
-            windowModel.values[currentIndex]?.preview();
-    }
-
     model: ScriptModel {
         id: windowModel
 
@@ -367,11 +353,6 @@ StyledListView {
     Connections {
         function onLauncherChanged() {
             root.syncDisplayText();
-            if (!root.screenState.launcher) {
-                root.screenState.liveFocus = false;
-                if (root.windowsMode)
-                    Windows.restore();
-            }
         }
 
         target: root.screenState
